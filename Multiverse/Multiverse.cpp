@@ -4,7 +4,6 @@
 #include <chrono>
 #include <thread>
 
-#include <SDL.h>
 #include "GameObject.h"
 #include "InputManager.h"
 #include "Scene.h"
