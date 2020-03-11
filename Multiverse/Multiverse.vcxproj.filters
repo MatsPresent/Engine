@@ -14,7 +14,7 @@
     <ClInclude Include="InputManager.h">
       <Filter>Start Files</Filter>
     </ClInclude>
-    <ClInclude Include="MiniginPCH.h">
+    <ClInclude Include="MultiversePCH.h">
       <Filter>Start Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
@@ -53,7 +53,7 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Start Files</Filter>
     </ClCompile>
-    <ClCompile Include="MiniginPCH.cpp">
+    <ClCompile Include="MultiversePCH.cpp">
       <Filter>Start Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
