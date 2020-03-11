@@ -2,7 +2,7 @@
 #include "SceneObject.h"
 #include "Transform.h"
 
-namespace dae
+namespace mv
 {
 	class Font;
 	class Texture2D;

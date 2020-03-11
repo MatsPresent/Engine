@@ -7,11 +7,11 @@
 #include "Font.h"
 #include "Texture2D.h"
 
-dae::TextObject::TextObject(const std::string& text, const std::shared_ptr<Font>& font) 
+mv::TextObject::TextObject(const std::string& text, const std::shared_ptr<Font>& font) 
 	: m_NeedsUpdate(true), m_Text(text), m_Font(font), m_Texture(nullptr)
 { }
 
-void dae::TextObject::Update()
+void mv::TextObject::Update()
 {
 	if (m_NeedsUpdate)
 	{
@@ -21,7 +21,7 @@ void dae::TextObject::Update()
 		{
 			throw std::runtime_error(std::string("Render text failed: ") + SDL_GetError());
 		}
-		auto texture = SDL_CreateTextureFromSurface(Renderer::GetInstance().GetSDLRenderer(), surf);
+		auto texture = SDL_CreateTextureFromSurface(Renderer::instance().GetSDLRenderer(), surf);
 		if (texture == nullptr) 
 		{
 			throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());
@@ -32,23 +32,23 @@ void dae::TextObject::Update()
 	}
 }
 
-void dae::TextObject::Render() const
+void mv::TextObject::Render() const
 {
 	if (m_Texture != nullptr)
 	{
 		const auto pos = m_Transform.GetPosition();
-		Renderer::GetInstance().RenderTexture(*m_Texture, pos.x, pos.y);
+		Renderer::instance().RenderTexture(*m_Texture, pos.x, pos.y);
 	}
 }
 
 // This implementation uses the "dirty flag" pattern
-void dae::TextObject::SetText(const std::string& text)
+void mv::TextObject::SetText(const std::string& text)
 {
 	m_Text = text;
 	m_NeedsUpdate = true;
 }
 
-void dae::TextObject::SetPosition(const float x, const float y)
+void mv::TextObject::SetPosition(const float x, const float y)
 {
 	m_Transform.SetPosition(x, y, 0.0f);
 }

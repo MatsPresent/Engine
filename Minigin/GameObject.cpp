@@ -3,22 +3,22 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 
-dae::GameObject::~GameObject() = default;
+mv::GameObject::~GameObject() = default;
 
-void dae::GameObject::Update(){}
+void mv::GameObject::Update(){}
 
-void dae::GameObject::Render() const
+void mv::GameObject::Render() const
 {
 	const auto pos = m_Transform.GetPosition();
-	Renderer::GetInstance().RenderTexture(*m_Texture, pos.x, pos.y);
+	Renderer::instance().RenderTexture(*m_Texture, pos.x, pos.y);
 }
 
-void dae::GameObject::SetTexture(const std::string& filename)
+void mv::GameObject::SetTexture(const std::string& filename)
 {
-	m_Texture = ResourceManager::GetInstance().LoadTexture(filename);
+	m_Texture = ResourceManager::instance().LoadTexture(filename);
 }
 
-void dae::GameObject::SetPosition(float x, float y)
+void mv::GameObject::SetPosition(float x, float y)
 {
 	m_Transform.SetPosition(x, y, 0.0f);
 }
