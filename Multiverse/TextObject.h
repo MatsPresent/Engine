@@ -1,12 +1,14 @@
 #pragma once
 #include "SceneObject.h"
 #include "Transform.h"
+#include <string>
+#include <memory>
 
 namespace mv
 {
 	class Font;
 	class Texture2D;
-	class TextObject final : public SceneObject
+	class TextObject : public SceneObject
 	{
 	public:
 		void Update() override;

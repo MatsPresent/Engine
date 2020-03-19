@@ -1,5 +1,8 @@
 #pragma once
 #include "Singleton.h"
+#include <string>
+#include <vector>
+#include <memory>
 
 namespace mv
 {

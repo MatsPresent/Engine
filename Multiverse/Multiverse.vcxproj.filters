@@ -35,12 +35,16 @@
     <ClInclude Include="Singleton.h">
       <Filter>Start Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextObject.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
     <ClInclude Include="Texture2D.h">
       <Filter>Start Files</Filter>
     </ClInclude>
+    <ClInclude Include="Universe.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="TextObject.h">
+      <Filter>Start Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="setup.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Multiverse.cpp" />

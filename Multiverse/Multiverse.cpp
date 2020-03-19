@@ -2,7 +2,7 @@
 #include "Multiverse.h"
 
 #include <chrono>
-#include <thread>
+#include <type_traits>
 
 #include "GameObject.h"
 #include "InputManager.h"
@@ -12,54 +12,37 @@
 #include "ResourceManager.h"
 #include "TextObject.h"
 
-using namespace std;
-using namespace std::chrono;
 
-
-#ifndef MG_TICKFREQUENCY
-#define MG_TICKFREQUENCY 60
+#ifndef MV_TICKFREQUENCY
+#define MV_TICKFREQUENCY 60
 #endif // !MG_TICKFREQUENCY
+static_assert(std::is_integral<decltype(MV_TICKFREQUENCY)>::value && MV_TICKFREQUENCY > 0,
+	"[mv] MV_TICKFREQUENCY must be a positive integral value");
+static_assert(MV_TICKFREQUENCY <= 65536, "[mv] Tick frequency cannot exceed 65536 Hz");
 
 
-const unsigned int mv::Multiverse::_tick_frequency = MG_TICKFREQUENCY;
-const float mv::Multiverse::_tick_interval = 10.f / static_cast<float>(MG_TICKFREQUENCY);
+const double mv::Multiverse::tick_interval = static_cast<double>(1'000'000'000 / MV_TICKFREQUENCY) / 1'000'000'000;
+double mv::Multiverse::frame_interval = 0.;
+const unsigned int mv::Multiverse::_tick_frequency = MV_TICKFREQUENCY;
+SDL_Window* mv::Multiverse::_window = nullptr;
 
 
-void mv::Multiverse::initialize()
+void mv::Multiverse::init()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
 	}
-
+	
 	_window = SDL_CreateWindow("Programming 4 assignment", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		640, 480, SDL_WINDOW_OPENGL );
+		640, 480, SDL_WINDOW_OPENGL);
 	if (_window == nullptr) {
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
 	Renderer::instance().Init(_window);
-}
 
-/**
- * Code constructing the scene world starts here
- */
-void mv::Multiverse::load_game() const
-{
-	auto& scene = SceneManager::instance().CreateScene("Demo");
-
-	auto go = std::make_shared<GameObject>();
-	go->SetTexture("background.jpg");
-	scene.Add(go);
-
-	go = std::make_shared<GameObject>();
-	go->SetTexture("logo.png");
-	go->SetPosition(216, 180);
-	scene.Add(go);
-
-	auto font = ResourceManager::instance().LoadFont("Lingua.otf", 36);
-	auto to = std::make_shared<TextObject>("Programming 4 Assignment", font);
-	to->SetPosition(80, 20);
-	scene.Add(to);
+	// tell the resource manager where he can find the game data
+	ResourceManager::instance().Init("../Data/");
 }
 
 void mv::Multiverse::cleanup()
@@ -72,36 +55,30 @@ void mv::Multiverse::cleanup()
 
 void mv::Multiverse::run()
 {
-	initialize();
-
-	// tell the resource manager where he can find the game data
-	ResourceManager::instance().Init("../Data/");
-
-	load_game();
+	constexpr std::chrono::high_resolution_clock::duration tick_duration(
+		std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
+		std::chrono::duration<long long, std::nano>(1'000'000'000 / _tick_frequency)));
 
 	auto& scene_manager = SceneManager::instance();
 	auto& input = InputManager::instance();
 	auto& renderer = Renderer::instance();
 
-	const high_resolution_clock::duration tick_duration(1'000'000'000 / _tick_frequency);
-	high_resolution_clock::time_point prev_time = high_resolution_clock::now();
-	high_resolution_clock::duration behind_time;
+	std::chrono::high_resolution_clock::time_point prev_time = std::chrono::high_resolution_clock::now();
+	std::chrono::high_resolution_clock::duration behind_time(0);
 	bool exit = false;
 	while (!exit) {
-		high_resolution_clock::time_point curr_time = high_resolution_clock::now();
-		high_resolution_clock::duration delta_time = curr_time - prev_time; // time since previous loop
+		std::chrono::high_resolution_clock::time_point curr_time = std::chrono::high_resolution_clock::now();
+		std::chrono::high_resolution_clock::duration elapsed_time = curr_time - prev_time; // add time since previous loop
+		frame_interval = std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count();
+		behind_time += elapsed_time;
 		prev_time = curr_time;
-		behind_time += delta_time;
-			
-		exit = !input.ProcessInput();
 
 		while (behind_time > tick_duration) {
+			exit = !input.ProcessInput() || exit;
 			scene_manager.Update();
 			behind_time -= tick_duration;
 		}
 
 		renderer.Render();
 	}
-
-	cleanup();
 }

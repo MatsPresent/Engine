@@ -1,20 +1,29 @@
 #pragma once
-#include <SDL.h>
 struct SDL_Window;
 
 namespace mv
 {
-	class Multiverse
+	class Entity;
+	class Universe;
+
+	class Multiverse 
 	{
 	public:
-		void initialize();
-		void load_game() const;
-		void cleanup();
-		void run();
+		static const double tick_interval;
+		static double frame_interval;
 
 	private:
 		static const unsigned int _tick_frequency;
-		static const float _tick_interval;
-		SDL_Window* _window{};
+		static SDL_Window* _window;
+		static Entity* _entities;
+		static Universe* _universes;
+
+
+		Multiverse() = delete;
+
+	public:
+		static void init();
+		static void cleanup();
+		static void run();
 	};
 }
