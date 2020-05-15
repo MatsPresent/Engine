@@ -1,6 +1,6 @@
 #pragma once
 #include "SceneObject.h"
-#include "Transform.h"
+#include "Position.h"
 #include <string>
 #include <memory>
 
@@ -26,7 +26,7 @@ namespace mv
 	private:
 		bool m_NeedsUpdate;
 		std::string m_Text;
-		Transform m_Transform;
+		Position m_Transform;
 		std::shared_ptr<Font> m_Font;
 		std::shared_ptr<Texture2D> m_Texture;
 	};

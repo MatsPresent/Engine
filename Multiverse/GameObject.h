@@ -1,5 +1,5 @@
 #pragma once
-#include "Transform.h"
+#include "Position.h"
 #include "SceneObject.h"
 
 namespace mv
@@ -22,7 +22,7 @@ namespace mv
 		GameObject& operator=(GameObject&& other) = delete;
 
 	private:
-		Transform m_Transform;
+		Position m_Transform;
 		std::shared_ptr<Texture2D> m_Texture{};
 	};
 }

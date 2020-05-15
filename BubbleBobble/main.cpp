@@ -11,9 +11,9 @@
 
 int main(int, char**)
 {
-	mv::Multiverse::init();
+	mv::multiverse().init();
 
-	auto& scene = mv::SceneManager::instance().CreateScene("Demo");
+	/*auto& scene = mv::SceneManager::instance().CreateScene("Demo");
 
 	auto go = std::make_shared<mv::GameObject>();
 	go->SetTexture("background.jpg");
@@ -22,9 +22,9 @@ int main(int, char**)
 	go = std::make_shared<mv::GameObject>();
 	go->SetTexture("logo.png");
 	go->SetPosition(216, 180);
-	scene.Add(go);
-	mv::Multiverse::run();
+	scene.Add(go);*/
+	mv::multiverse().run();
 
-	mv::Multiverse::cleanup();
+	mv::multiverse().cleanup();
 	return 0;
 }
