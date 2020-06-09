@@ -17,9 +17,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Start Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Start Files</Filter>
     </ClInclude>
@@ -45,9 +42,40 @@
     <ClInclude Include="Position.h">
       <Filter>Start Files</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="Matrix.h" />
     <ClInclude Include="UpdateStage.h" />
+    <ClInclude Include="SpriteRenderComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="IDList.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Blob.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryReader.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Multiverse.cpp" />
@@ -64,9 +92,6 @@
       <Filter>Start Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
       <Filter>Start Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
@@ -86,14 +111,58 @@
     </ClCompile>
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Universe.cpp" />
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRenderComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Blob.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Start Files">
       <UniqueIdentifier>{f2044a2e-585e-4fce-a497-cc7b93712d23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{150e1916-54cf-467e-b4b1-dffe30cc3c69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maths">
+      <UniqueIdentifier>{6b30b972-cdf9-4906-a71d-5078628eee18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{05c76eb8-1101-4562-a77d-abad82a54cf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{fbbb7242-fe57-4d34-8a4a-cf98f1372749}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Universe.inl" />
     <None Include="Entity.inl" />
+    <None Include="Vector.inl">
+      <Filter>Maths</Filter>
+    </None>
+    <None Include="Matrix.inl">
+      <Filter>Maths</Filter>
+    </None>
+    <None Include="Event.inl">
+      <Filter>Utility</Filter>
+    </None>
+    <None Include="IDList.inl">
+      <Filter>Utility</Filter>
+    </None>
+    <None Include="BinaryReader.inl">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

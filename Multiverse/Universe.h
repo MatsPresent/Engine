@@ -18,6 +18,9 @@ namespace mv
 	template <uint dims>
 	class Universe final
 	{
+		friend Multiverse;
+		friend Entity<dims>;
+
 	public:
 		using transform_type = Transform<dims>;
 		using position_type = decltype(transform_type::translate);
@@ -76,7 +79,13 @@ namespace mv
 
 		public:
 			ComponentUpdaterList() = default;
+			ComponentUpdaterList(const ComponentUpdaterList<stage>&) = delete;
+			ComponentUpdaterList(ComponentUpdaterList<stage>&& other) noexcept;
+
 			~ComponentUpdaterList();
+
+			ComponentUpdaterList<stage>& operator=(const ComponentUpdaterList<stage>&) = delete;
+			ComponentUpdaterList<stage>& operator=(ComponentUpdaterList<stage>&& other) noexcept;
 
 			ComponentUpdaterBase<stage>* const* begin() const;
 			ComponentUpdaterBase<stage>* const* end() const;
@@ -126,6 +135,10 @@ namespace mv
 		};
 
 
+		id_type _id;
+
+		Gridspace _gridspace;
+
 		ComponentUpdaterList<UpdateStage::behaviour> _behaviour_updaters;
 		ComponentUpdaterList<UpdateStage::prephysics> _prephysics_updaters;
 		ComponentUpdaterList<UpdateStage::physics> _physics_updaters;
@@ -133,49 +146,78 @@ namespace mv
 		ComponentUpdaterList<UpdateStage::prerender> _prerender_updaters;
 		ComponentUpdaterList<UpdateStage::render> _render_updaters;
 
-		Gridspace _gridspace;
+		float _update_interval;
+		float _render_interval;
+		float _update_timeout;
+		float _render_timeout;
+		bool _update_enabled;
+		bool _render_enabled;
+
+
+		template <uint _ = dims, typename std::enable_if<_ == 2, int>::type = 0>
+		Universe(id_type id, uint cell_count_x, uint cell_count_y, float cell_size_x, float cell_size_y);
+		template <uint _ = dims, typename std::enable_if<_ == 3, int>::type = 0>
+		Universe(id_type id, uint cell_count_x, uint cell_count_y, uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z);
+
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
+		ComponentType& get_component(id_type component_id) const;
+
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
+		ComponentType& add_component(ComponentType&& component);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
+		void remove_component(id_type id);
+
+		void update(float delta_time);
+		void render(float delta_time);
 
 	public:
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
-		ComponentType& get_component(id_type component_id) const;
+		Universe(const Universe<dims>&) = delete;
+		Universe(Universe<dims>&& other) noexcept;
 
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
-		ComponentType& add_component(ComponentType&& component);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
-		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		Universe& operator=(const Universe<dims>&) = delete;
+		Universe& operator=(Universe<dims>&& other) noexcept;
 
-		void update(float deltaTime);
-		void render(float deltaTime);
+		/**
+			\brief get universe id
+		*/
+		id_type id() const;
+
+		Entity<dims>& spawn_entity(const transform_type& transform = transform_type{}) const;
+
+		void set_update_interval(float interval);
+		void set_update_enabled(bool enabled);
+		void set_render_interval(float interval);
+		void set_render_enabled(bool enabled);
 	};
 
 

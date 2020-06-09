@@ -15,7 +15,7 @@ void mv::GameObject::Render() const
 
 void mv::GameObject::SetTexture(const std::string& filename)
 {
-	m_Texture = ResourceManager::instance().LoadTexture(filename);
+	//m_Texture = ResourceManager::instance().LoadTexture(filename);
 }
 
 void mv::GameObject::SetPosition(float x, float y)

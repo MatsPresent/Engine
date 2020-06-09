@@ -1,5 +1,17 @@
 #include "Universe.h"
 
+
+template <mv::uint dims>
+template <typename ComponentType>
+std::vector<mv::uint> mv::Universe<dims>::ComponentUpdater<ComponentType>::_lookup{};
+
+template <mv::uint dims>
+template <typename ComponentType>
+std::vector<mv::id_type> mv::Universe<dims>::ComponentUpdater<ComponentType>::_freed_ids{};
+
+
+
+
 template <mv::uint dims>
 template <typename ComponentType>
 inline mv::type_id_type mv::Universe<dims>::ComponentUpdater<ComponentType>::type_id() const
@@ -47,14 +59,16 @@ template <typename ComponentType>
 inline ComponentType& mv::Universe<dims>::ComponentUpdater<ComponentType>::add(ComponentType&& component)
 {
 	id_type id;
+	uint idx = static_cast<uint>(this->_components.size());
 	if (_freed_ids.empty()) {
-		id = _lookup.size();
+		id = static_cast<id_type>(_lookup.size());
+		_lookup.push_back(idx);
 	}
 	else {
 		id = _freed_ids.back();
 		_freed_ids.pop_back();
+		_lookup[id] = idx;
 	}
-	_lookup[id] = this->_components.size();
 	this->_components.push_back(std::move(component));
 	this->_components.back()._id = id;
 	return this->_components.back();
@@ -83,7 +97,7 @@ template <mv::uint dims>
 template <typename ComponentType>
 inline void mv::Universe<dims>::ComponentUpdater<ComponentType>::render() const
 {
-	for (ComponentType& component : this->_components) {
+	for (const ComponentType& component : this->_components) {
 		component.render();
 	}
 }
@@ -95,8 +109,7 @@ template <mv::UpdateStage stage>
 template <typename ComponentType>
 inline ComponentType& mv::Universe<dims>::ComponentUpdaterList<stage>::get(id_type component_id) const
 {
-	return reinterpret_cast<ComponentUpdater<ComponentType>*>(nullptr);
-	//return reinterpret_cast<ComponentUpdater<ComponentType>*>(this->_updaters.at(this->_lookup.at(type_id<ComponentType>()))->get(component_id);
+	return reinterpret_cast<ComponentUpdater<ComponentType>*>(this->_updaters.at(this->_lookup.at(type_id<ComponentType>()))->get(component_id));
 }
 
 
@@ -107,7 +120,7 @@ inline ComponentType& mv::Universe<dims>::ComponentUpdaterList<stage>::add(Compo
 {
 	auto it = this->_lookup.find(type_id<ComponentType>());
 	if (it == this->_lookup.end()) {
-		it = this->_lookup.emplace(type_id<ComponentType>(), this->_updaters.size()).first;
+		it = this->_lookup.emplace(type_id<ComponentType>(), static_cast<id_type>(this->_updaters.size())).first;
 		this->_updaters.push_back(new ComponentUpdater<ComponentType>);
 	}
 	return reinterpret_cast<ComponentUpdater<ComponentType>*>(this->_updaters.at(it->second))->add(std::move(component));

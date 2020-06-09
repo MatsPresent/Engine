@@ -7,6 +7,7 @@
 #include <vector> // vector
 
 #include "UpdateStage.h"
+#include "Multiverse.h"
 
 namespace mv
 {
@@ -18,6 +19,8 @@ namespace mv
 	template <uint dims>
 	class Entity final
 	{
+		friend Multiverse;
+
 		template <typename ComponentType>
 		class ComponentIterator : public std::iterator<std::random_access_iterator_tag, ComponentType>
 		{
@@ -89,7 +92,16 @@ namespace mv
 		id_type _physics_type_id; // type id of the entity's physics component
 		std::map<type_id_type, std::vector<id_type>> _component_ids; // unique ids of attached components per component type
 
+
+		Entity(id_type id, id_type universe_id);
+
 	public:
+		Entity(const Entity&) = delete;
+		Entity(Entity&& other) noexcept;
+
+		Entity& operator=(const Entity&) = delete;
+		Entity& operator=(Entity&& other) noexcept;
+
 		/**
 			\brief get entity id
 		*/
@@ -99,7 +111,7 @@ namespace mv
 		*/
 		id_type universe_id() const;
 
-		const Universe<dims>& universe() const;
+		Universe<dims>& universe() const;
 
 		/**
 			\brief get component of type
@@ -130,9 +142,6 @@ namespace mv
 		ComponentType& add_component(Args&&... args);
 		template <typename ComponentType>
 		bool remove_component(id_type component_id);
-
-	private:
-		Universe<dims>& _universe();
 	};
 
 	template <uint dims, typename ComponentType>

@@ -57,7 +57,7 @@ template <mv::uint dims>
 template <typename ComponentType>
 inline ComponentType& mv::Entity<dims>::ComponentIterator<ComponentType>::operator*() const
 {
-	return multiverse()._universe<dims>(this->_universe_id).get_component<ComponentType>(this->_component_id_it);
+	return multiverse().universe<dims>(this->_universe_id).get_component<ComponentType>(this->_component_id_it);
 }
 
 template <mv::uint dims>
@@ -208,7 +208,7 @@ template <mv::uint dims>
 template <typename ComponentType>
 inline ComponentType& mv::Entity<dims>::component() const
 {
-	return this->_universe().get_component<ComponentType>(this->_component_ids.at(type_id<ComponentType>()).front());
+	return this->universe().get_component<ComponentType>(this->_component_ids.at(type_id<ComponentType>()).front());
 }
 
 template <mv::uint dims>
@@ -227,7 +227,7 @@ inline ComponentType* mv::Entity<dims>::find_component() const
 	auto it = this->_component_ids.find(type_id<ComponentType>());
 	if (it == this->_component_ids.cend())
 		return nullptr;
-	return &this->_universe().get_component<ComponentType>(it->second.front());
+	return &this->universe().get_component<ComponentType>(it->second.front());
 }
 
 
@@ -235,8 +235,8 @@ template <mv::uint dims>
 template <typename ComponentType, typename... Args>
 inline ComponentType& mv::Entity<dims>::add_component(Args&&... args)
 {
-	ComponentType& component = this->_universe().add_component(ComponentType(std::forward<Args>(args)...));
-	std::map<type_id_type, std::vector<id_type>>::iterator it = this->_component_ids.emplace(type_id<ComponentType>());
+	ComponentType& component = this->universe().add_component(ComponentType(std::forward<Args>(args)...));
+	std::map<type_id_type, std::vector<id_type>>::iterator it = this->_component_ids.emplace(type_id<ComponentType>(), std::vector<id_type>()).first;
 	it->second.push_back(component.id());
 	return component;
 }
@@ -253,7 +253,7 @@ inline bool mv::Entity<dims>::remove_component(id_type component_id)
 			if (it->second.empty()) {
 				this->_component_ids.erase(it);
 			}
-			this->_universe().remove_component<ComponentType>(component_id);
+			this->universe().remove_component<ComponentType>(component_id);
 			return true;
 		}
 	}

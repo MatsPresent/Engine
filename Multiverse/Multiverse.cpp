@@ -4,6 +4,7 @@
 #include <chrono>
 #include <type_traits>
 
+#include "Entity.h"
 #include "Universe.h"
 
 #include "GameObject.h"
@@ -24,7 +25,7 @@ static_assert(MV_TICKFREQUENCY <= 65536, "[mv] Tick frequency cannot exceed 6553
 
 
 const float mv::Multiverse::tick_interval = static_cast<float>(1'000'000'000 / MV_TICKFREQUENCY) / 1'000'000'000;
-const unsigned int mv::Multiverse::tick_frequency = MV_TICKFREQUENCY;
+const mv::uint mv::Multiverse::tick_frequency = MV_TICKFREQUENCY;
 
 
 mv::Multiverse& mv::multiverse()
@@ -33,8 +34,9 @@ mv::Multiverse& mv::multiverse()
 }
 
 
-mv::Multiverse::Multiverse()
-{}
+mv::Multiverse::Multiverse() = default;
+
+mv::Multiverse::~Multiverse() = default;
 
 mv::Multiverse& mv::Multiverse::get()
 {
@@ -57,12 +59,13 @@ void mv::Multiverse::init()
 	Renderer::instance().Init(this->_window);
 
 	// tell the resource manager where he can find the game data
-	ResourceManager::instance().Init("../Data/");
+	this->_resource_manager = new ResourceManager("../Data/");
 }
 
 void mv::Multiverse::cleanup()
 {
 	Renderer::instance().Destroy();
+	delete this->_resource_manager;
 	SDL_DestroyWindow(this->_window);
 	this->_window = nullptr;
 	SDL_Quit();
@@ -84,50 +87,104 @@ void mv::Multiverse::run()
 	while (!exit) {
 		std::chrono::high_resolution_clock::time_point curr_time = std::chrono::high_resolution_clock::now();
 		std::chrono::high_resolution_clock::duration elapsed_time = curr_time - prev_time; // add time since previous loop
-		//frame_interval = std::chrono::duration_cast<std::chrono::duration<float>>(elapsed_time).count();
+		float frame_interval = std::chrono::duration_cast<std::chrono::duration<float>>(elapsed_time).count();
 		behind_time += elapsed_time;
 		prev_time = curr_time;
 
 		while (behind_time > tick_duration) {
 			exit = !input.ProcessInput() || exit;
-			scene_manager.Update();
+			for (Universe<2>& universe : this->_universes2d) {
+				universe.update(this->tick_interval);
+			}
+			for (Universe<3>& universe : this->_universes3d) {
+				universe.update(this->tick_interval);
+			}
 			behind_time -= tick_duration;
 		}
 
-		renderer.Render();
+		SDL_RenderClear(renderer.GetSDLRenderer());
+		for (Universe<2>& universe : this->_universes2d) {
+			universe.render(frame_interval);
+		}
+		for (Universe<3>& universe : this->_universes3d) {
+			universe.render(frame_interval);
+		}
+		SDL_RenderPresent(renderer.GetSDLRenderer());
 	}
 }
 
-template <unsigned int dims, typename std::enable_if<dims == 2, int>::type>
+const mv::ResourceManager& mv::Multiverse::resource_manager() const
+{
+	return *this->_resource_manager;
+}
+
+template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 inline mv::Entity<2>& mv::Multiverse::entity(id_type id)
 {
 	return this->_entities2d[id];
 }
 
-template <unsigned int dims, typename std::enable_if<dims == 3, int>::type>
+template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 inline mv::Entity<3>& mv::Multiverse::entity(id_type id)
 {
 	return this->_entities3d[id];
 }
 
-mv::Entity2D& mv::Multiverse::entity2d(id_type id)
-{
-	return this->entity<2>(id);
-}
 
-mv::Entity3D& mv::Multiverse::entity3d(id_type id)
-{
-	return this->entity<3>(id);
-}
-
-template <unsigned int dims, typename std::enable_if<dims == 2, int>::type>
-mv::Universe<2>& mv::Multiverse::_universe(id_type id)
+template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
+mv::Universe<2>& mv::Multiverse::universe(id_type id)
 {
 	return this->_universes2d[id];
 }
 
-template <unsigned int dims, typename std::enable_if<dims == 3, int>::type>
-mv::Universe<3>& mv::Multiverse::_universe(id_type id)
+template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
+mv::Universe<3>& mv::Multiverse::universe(id_type id)
 {
 	return this->_universes3d[id];
 }
+
+
+template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
+mv::Entity<2>& mv::Multiverse::create_entity(id_type universe_id)
+{
+	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id });
+	return this->_entities2d[id];
+}
+
+template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
+mv::Entity<3>& mv::Multiverse::create_entity(id_type universe_id)
+{
+	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id });
+	return this->_entities3d[id];
+}
+
+
+template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
+mv::Universe<2>& mv::Multiverse::create_universe(
+	uint cell_count_x, uint cell_count_y, float cell_size_x, float cell_size_y)
+{
+	id_type id = this->_universes2d.insert(
+		Universe<2>{ this->_universes2d.next_id(), cell_count_x, cell_count_y, cell_size_x, cell_size_y });
+	return this->_universes2d[id];
+}
+
+template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
+mv::Universe<3>& mv::Multiverse::create_universe(
+	uint cell_count_x, uint cell_count_y, uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z)
+{
+	id_type id = this->_universes3d.insert(
+		Universe<3>{ this->_universes3d.next_id(), cell_count_x, cell_count_y, cell_count_z, cell_size_x, cell_size_y, cell_size_z });
+	return this->_universes3d[id];
+}
+
+
+
+
+template mv::Entity<2>& mv::Multiverse::entity<2>(id_type);
+template mv::Universe<2>& mv::Multiverse::universe<2>(id_type);
+template mv::Entity<2>& mv::Multiverse::create_entity<2>(id_type);
+template mv::Universe<2>& mv::Multiverse::create_universe<2>(uint, uint, float, float);
+template mv::Entity<3>& mv::Multiverse::entity<3>(id_type);
+template mv::Universe<3>& mv::Multiverse::universe<3>(id_type);
+template mv::Entity<3>& mv::Multiverse::create_entity<3>(id_type);
+template mv::Universe<3>& mv::Multiverse::create_universe<3>(uint, uint, uint, float, float, float);

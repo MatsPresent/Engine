@@ -1,19 +1,37 @@
 #pragma once
-#include "Singleton.h"
+#include <string>
+#include <unordered_map>
 
 namespace mv
 {
-	class Texture2D;
-	class Font;
-	class ResourceManager final : public Singleton<ResourceManager>
+	class Multiverse;
+	class Resource;
+
+	class ResourceManager final
 	{
-	public:
-		void Init(const std::string& data);
-		std::shared_ptr<Texture2D> LoadTexture(const std::string& file) const;
-		std::shared_ptr<Font> LoadFont(const std::string& file, unsigned int size) const;
+		friend Multiverse;
+
 	private:
-		friend class Singleton<ResourceManager>;
-		ResourceManager() = default;
-		std::string m_DataPath;
+		std::string _data_path;
+		std::unordered_map<std::string, Resource*> _resources;
+
+
+		ResourceManager(const std::string& data_path);
+	public:
+		ResourceManager(const ResourceManager&) = delete;
+		ResourceManager(ResourceManager&& other) noexcept = default;
+
+		~ResourceManager();
+
+		ResourceManager& operator=(const ResourceManager&) = delete;
+		ResourceManager& operator=(ResourceManager&& other) noexcept = default;
+
+	private:
+		void init();
+		void register_resource(const std::string& path, const std::string& extension);
+
+	public:
+		template <typename T>
+		const T* get(const std::string& id) const;
 	};
 }

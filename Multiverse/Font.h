@@ -1,4 +1,5 @@
 #pragma once
+#include "Resource.h"
 
 struct _TTF_Font;
 namespace mv

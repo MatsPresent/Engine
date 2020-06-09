@@ -8,10 +8,10 @@
 
 namespace mv
 {
-	template <unsigned int dims>
+	template <uint dims>
 	class Entity;
 
-	template <unsigned int dims, UpdateStage stage>
+	template <uint dims, UpdateStage stage>
 	class Component
 	{
 		friend class Universe<dims>;
@@ -30,22 +30,23 @@ namespace mv
 		id_type entity_id() const;
 		id_type universe_id() const;
 		Entity<dims>& entity() const;
-		const Universe<dims>& universe() const;
+		Universe<dims>& universe() const;
 
-		void update(float deltaTime);
+		void update(float delta_time);
 	};
 
-	template <unsigned int dims>
+	template <uint dims>
 	class Component<dims, UpdateStage::physics>
 	{
 		friend class Universe<dims>;
 
 		id_type _id; // id of this component, unique per component type in the multiverse
 		id_type _entity_id; // id of owning entity
-		Transform<dims> _transform;
-		Transform<dims> _velocity;
 
 	public:
+		Transform<dims> transform;
+		Transform<dims> velocity;
+
 		static constexpr UpdateStage update_stage = UpdateStage::physics;
 
 	protected:
@@ -55,26 +56,23 @@ namespace mv
 		id_type id() const;
 		id_type entity_id() const;
 		id_type universe_id() const;
-		const Entity<dims>& entity() const;
-		const Universe<dims>& universe() const;
-		Transform<dims>& transform();
-		const Transform<dims>& transform() const;
-		Transform<dims>& velocity();
-		const Transform<dims>& velocity() const;
+		Entity<dims>& entity() const;
+		Universe<dims>& universe() const;
 
-		void update(float deltaTime);
+		void update(float delta_time);
 	};
 
-	template <unsigned int dims>
+	template <uint dims>
 	class Component<dims, UpdateStage::render>
 	{
 		friend class Universe<dims>;
 
 		id_type _id; // id of component, unique per component type in the multiverse
 		id_type _entity_id; // id of owning entity
-		Matrix<dims + 1> _transform; // model transform matrix
 
 	public:
+		Matrix<float, dims + 1, dims + 1> transform; // model transform matrix
+
 		static constexpr UpdateStage update_stage = UpdateStage::render;
 
 	protected:
@@ -84,11 +82,10 @@ namespace mv
 		id_type id() const;
 		id_type entity_id() const;
 		id_type universe_id() const;
-		const Entity<dims>& entity() const;
-		const Universe<dims>& universe() const;
-		const Matrix<dims + 1>& transform() const;
+		Entity<dims>& entity() const;
+		Universe<dims>& universe() const;
 
-		void update(float deltaTime);
+		void update(float delta_time);
 		void render() const;
 	};
 

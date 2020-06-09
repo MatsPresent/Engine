@@ -1,4 +1,5 @@
 #pragma once
+#include "Vector.h"
 #pragma warning(push)
 #pragma warning(disable : 4201)
 #include "glm/glm.hpp"
@@ -14,18 +15,18 @@ namespace mv
 	class Transform<2>
 	{
 	public:
-		glm::vec2 translate;
+		vec2f translate;
 		float rotate;
-		glm::vec2 scale;
+		vec2f scale;
 	};
 
 	template <>
 	class Transform<3>
 	{
 	public:
-		glm::vec3 translate;
+		vec3f translate;
 		glm::quat rotate;
-		glm::vec3 scale;
+		vec3f scale;
 	};
 
 	using Transform2D = Transform<2>;

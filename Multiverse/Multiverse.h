@@ -1,48 +1,68 @@
 #pragma once
 #include "setup.h"
-#include "Entity.h"
+#include "IDList.h"
 struct SDL_Window;
 
 namespace mv
 {
+	class ResourceManager;
+
+	template <uint dims>
+	class Entity;
+	template <uint dims>
+	class Universe;
+
 	class Multiverse 
 	{
-		friend Entity<2>;
-		friend Entity<3>;
-
 	public:
 		static const float tick_interval;
-		static const unsigned int tick_frequency;
+		static const uint tick_frequency;
 
 	private:
 		SDL_Window* _window;
-		Entity<2>* _entities2d;
-		Entity<3>* _entities3d;
-		Universe<2>* _universes2d;
-		Universe<3>* _universes3d;
+		ResourceManager* _resource_manager;
+
+		IDList<Entity<2>, id_type> _entities2d;
+		IDList<Entity<3>, id_type> _entities3d;
+		IDList<Universe<2>, id_type> _universes2d;
+		IDList<Universe<3>, id_type> _universes3d;
 
 
 		Multiverse();
 
-
 	public:
+		~Multiverse();
+
 		static Multiverse& get();
 
 		void init();
 		void cleanup();
 		void run();
 
-		template <unsigned int dims, typename std::enable_if<dims == 2, int>::type = 0>
-		Entity<2>& entity(id_type id);
-		template <unsigned int dims, typename std::enable_if<dims == 3, int>::type = 0>
-		Entity<3>& entity(id_type id);
-		Entity2D& entity2d(id_type id);
-		Entity3D& entity3d(id_type id);
+		const ResourceManager& resource_manager() const;
 
-	private:
-		template <unsigned int dims, typename std::enable_if<dims == 2, int>::type = 0>
-		Universe<2>& _universe(id_type id);
-		template <unsigned int dims, typename std::enable_if<dims == 3, int>::type = 0>
-		Universe<3>& _universe(id_type id);
+		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
+		Entity<2>& entity(id_type id);
+		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
+		Entity<3>& entity(id_type id);
+
+		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
+		Universe<2>& universe(id_type id);
+		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
+		Universe<3>& universe(id_type id);
+
+		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
+		Entity<2>& create_entity(id_type universe_id);
+		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
+		Entity<3>& create_entity(id_type universe_id);
+
+		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
+		Universe<2>& create_universe(
+			uint cell_count_x = MV_CELL_COUNT_DEFAULT, uint cell_count_y = MV_CELL_COUNT_DEFAULT,
+			float cell_size_x = MV_CELL_SIZE_DEFAULT, float cell_size_y = MV_CELL_SIZE_DEFAULT);
+		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
+		Universe<3>& create_universe(
+			uint cell_count_x = MV_CELL_COUNT_DEFAULT, uint cell_count_y = MV_CELL_COUNT_DEFAULT, uint cell_count_z = MV_CELL_COUNT_DEFAULT,
+			float cell_size_x = MV_CELL_SIZE_DEFAULT, float cell_size_y = MV_CELL_SIZE_DEFAULT, float cell_size_z = MV_CELL_SIZE_DEFAULT);
 	};
 }
