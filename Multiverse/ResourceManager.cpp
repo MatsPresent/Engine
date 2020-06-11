@@ -16,7 +16,7 @@
 mv::ResourceManager::ResourceManager(const std::string& data_path)
 	: _data_path{ std::filesystem::path(data_path).generic_string() }
 {
-	this->init();
+	this->_init();
 }
 
 mv::ResourceManager::~ResourceManager()
@@ -28,7 +28,7 @@ mv::ResourceManager::~ResourceManager()
 }
 
 
-void mv::ResourceManager::init()
+void mv::ResourceManager::_init()
 {
 	if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
 		throw std::runtime_error(std::string("Failed to load support for png's: ") + SDL_GetError());
@@ -42,12 +42,12 @@ void mv::ResourceManager::init()
 
 	for (const std::filesystem::directory_entry& e : std::filesystem::recursive_directory_iterator(this->_data_path)) {
 		if (e.is_regular_file()) {
-			this->register_resource(e.path().generic_string(), e.path().extension().generic_string());
+			this->_register_resource(e.path().generic_string(), e.path().extension().generic_string());
 		}
 	}
 }
 
-void mv::ResourceManager::register_resource(const std::string& path, const std::string& extension)
+void mv::ResourceManager::_register_resource(const std::string& path, const std::string& extension)
 {
 	std::string id = path.substr(this->_data_path.size());
 	if (extension == ".jpg" || extension == ".png") {

@@ -9,10 +9,10 @@ mv::Blob::Blob(const std::string& path)
 {
 	std::ifstream file(path, std::ios::binary);
     if (!file.is_open())
-        throw 69;
+        throw std::runtime_error("failed to open binary file");
 
     file.seekg(0, file.end);
-    this->_size = file.tellg();
+    this->_size = static_cast<size_type>(file.tellg());
     file.seekg(0, file.beg); 
     this->_data = new char[this->_size];
 

@@ -56,5 +56,34 @@ mv::Universe<dims>& mv::Entity<dims>::universe() const
 	return mv::multiverse().universe<dims>(this->_universe_id);
 }
 
+
+template <mv::uint dims>
+const typename mv::Entity<dims>::transform_type& mv::Entity<dims>::get_transform() const
+{
+	return this->_transform;
+}
+
+template <mv::uint dims>
+const typename mv::Entity<dims>::transform_type& mv::Entity<dims>::get_velocity() const
+{
+	return this->_velocity;
+}
+
+template <mv::uint dims>
+void mv::Entity<dims>::set_transform(const transform_type& transform)
+{
+	if (this->universe().is_transform_locked()) {
+		throw std::runtime_error("Entity::set_transform: transform is currently readonly")
+	}
+	this->_transform = transform;
+}
+
+template <mv::uint dims>
+void mv::Entity<dims>::set_velocity(const transform_type& velocity)
+{
+	this->_velocity = velocity;
+}
+
+
 template class mv::Entity<2>;
 template class mv::Entity<3>;

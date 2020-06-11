@@ -44,44 +44,6 @@ void mv::Component<dims, stage>::update(float)
 
 
 template <mv::uint dims>
-mv::id_type mv::Component<dims, mv::UpdateStage::physics>::id() const
-{
-	return this->_id;
-}
-
-template <mv::uint dims>
-mv::id_type mv::Component<dims, mv::UpdateStage::physics>::entity_id() const
-{
-	return this->_entity_id;
-}
-
-template <mv::uint dims>
-mv::id_type mv::Component<dims, mv::UpdateStage::physics>::universe_id() const
-{
-	return this->entity().universe_id();
-}
-
-template <mv::uint dims>
-mv::Entity<dims>& mv::Component<dims, mv::UpdateStage::physics>::entity() const
-{
-	return mv::multiverse().entity<dims>(this->_entity_id);
-}
-
-template <mv::uint dims>
-mv::Universe<dims>& mv::Component<dims, mv::UpdateStage::physics>::universe() const
-{
-	return this->entity().universe();
-}
-
-
-template <mv::uint dims>
-void mv::Component<dims, mv::UpdateStage::physics>::update(float)
-{}
-
-
-
-
-template <mv::uint dims>
 mv::id_type mv::Component<dims, mv::UpdateStage::render>::id() const
 {
 	return this->_id;

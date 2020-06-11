@@ -17,18 +17,18 @@ namespace mv
 
 
 		ResourceManager(const std::string& data_path);
-	public:
 		ResourceManager(const ResourceManager&) = delete;
-		ResourceManager(ResourceManager&& other) noexcept = default;
+		ResourceManager(ResourceManager&&) noexcept = delete;
 
+	public:
 		~ResourceManager();
 
-		ResourceManager& operator=(const ResourceManager&) = delete;
-		ResourceManager& operator=(ResourceManager&& other) noexcept = default;
-
 	private:
-		void init();
-		void register_resource(const std::string& path, const std::string& extension);
+		ResourceManager& operator=(const ResourceManager&) = delete;
+		ResourceManager& operator=(ResourceManager&&) noexcept = delete;
+
+		void _init();
+		void _register_resource(const std::string& path, const std::string& extension);
 
 	public:
 		template <typename T>

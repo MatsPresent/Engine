@@ -8,6 +8,7 @@
 
 #include "UpdateStage.h"
 #include "Multiverse.h"
+#include "Transform.h"
 
 namespace mv
 {
@@ -21,6 +22,10 @@ namespace mv
 	{
 		friend Multiverse;
 
+	public:
+		using transform_type = Transform<dims>;
+
+	private:
 		template <typename ComponentType>
 		class ComponentIterator : public std::iterator<std::random_access_iterator_tag, ComponentType>
 		{
@@ -88,8 +93,10 @@ namespace mv
 
 		id_type _id; // id of this entity, unique in the multiverse
 		id_type _universe_id; // id of the universe in which the entity resides
-		id_type _physics_id; // id of the entity's physics component
-		id_type _physics_type_id; // type id of the entity's physics component
+
+		transform_type _transform;
+		transform_type _velocity;
+
 		std::map<type_id_type, std::vector<id_type>> _component_ids; // unique ids of attached components per component type
 
 
@@ -110,8 +117,15 @@ namespace mv
 			\brief get universe id
 		*/
 		id_type universe_id() const;
-
+		/**
+			\brief get universe
+		*/
 		Universe<dims>& universe() const;
+
+		const transform_type& get_transform() const;
+		const transform_type& get_velocity() const;
+		void set_transform(const transform_type& transform);
+		void set_velocity(const transform_type& velocity);
 
 		/**
 			\brief get component of type

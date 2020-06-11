@@ -2,6 +2,8 @@
 #include "Universe.h"
 
 #include "Multiverse.h"
+#include "Component.h"
+#include "ThreadPool.h"
 
 template <mv::uint dims>
 template <mv::UpdateStage stage>
@@ -61,7 +63,7 @@ template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
 mv::Universe<dims>::Gridspace::Gridspace(
 	mv::uint cell_count_x, mv::uint cell_count_y, float cell_size_x, float cell_size_y)
-	: _cells{ new std::vector<id_type>[cell_count_x * cell_count_y] },
+	: _cells{ new std::vector<Entry>[cell_count_x * cell_count_y] },
 	_cell_counts{ cell_count_x, cell_count_y }, _cell_sizes{ cell_size_x, cell_size_y }
 {}
 
@@ -69,13 +71,13 @@ template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 3, int>::type>
 mv::Universe<dims>::Gridspace::Gridspace(
 	mv::uint cell_count_x, mv::uint cell_count_y, mv::uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z)
-	: _cells{ new std::vector<id_type>[cell_count_x * cell_count_y * cell_count_z] },
-	_cell_counts{ cell_count_x, cell_count_y, cell_count_z }, _cell_sizes{ cell_size_x, cell_size_y, cell_size_y }
+	: _cells{ new std::vector<Entry>[cell_count_x * cell_count_y * cell_count_z] },
+	_cell_counts{ cell_count_x, cell_count_y, cell_count_z }, _cell_sizes{ cell_size_x, cell_size_y, cell_size_z }
 {}
 
 template <mv::uint dims>
 inline mv::Universe<dims>::Gridspace::Gridspace(const Gridspace& other)
-	: _cells{ new std::vector<id_type>[other._cell_count()] }, _cell_counts{}, _cell_sizes{}
+	: _cells{ new std::vector<Entry>[other._cell_count()] }, _cell_counts{}, _cell_sizes{}
 {
 	for (uint i = 0; i < dims; ++i) {
 		this->_cell_counts[i] = other._cell_counts[i];
@@ -112,7 +114,7 @@ typename mv::Universe<dims>::Gridspace& mv::Universe<dims>::Gridspace::operator=
 	if (this == &other)
 		return *this;
 
-	this->_cells = new std::vector<id_type>[other._cell_count()];
+	this->_cells = new std::vector<Entry>[other._cell_count()];
 	for (uint i = 0; i < dims; ++i) {
 		this->_cell_counts[i] = other._cell_counts[i];
 		this->_cell_sizes[i] = other._cell_sizes[i];
@@ -145,7 +147,11 @@ template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
 void mv::Universe<dims>::Gridspace::update_cells()
 {
-
+	for (uint y = 0; y < this->_cell_counts[1]; ++y) {
+		for (uint x = 0; x < this->_cell_counts[0]; ++x) {
+			
+		}
+	}
 }
 
 template <mv::uint dims>
@@ -158,7 +164,7 @@ void mv::Universe<dims>::Gridspace::update_cells()
 
 template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
-std::vector<mv::Entity<2>*> mv::Universe<dims>::Gridspace::entities_in_range(const position_type& origin, float radius) const
+std::vector<mv::Entity<2>*> mv::Universe<dims>::Gridspace::entities_in_range(const position_type&, float) const
 {
 
 	return {};
@@ -166,7 +172,7 @@ std::vector<mv::Entity<2>*> mv::Universe<dims>::Gridspace::entities_in_range(con
 
 template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 3, int>::type>
-std::vector<mv::Entity<3>*> mv::Universe<dims>::Gridspace::entities_in_range(const position_type& origin, float radius) const
+std::vector<mv::Entity<3>*> mv::Universe<dims>::Gridspace::entities_in_range(const position_type&, float) const
 {
 
 	return {};
@@ -198,7 +204,8 @@ mv::Universe<dims>::Universe(
 	_behaviour_updaters{}, _prephysics_updaters{}, _physics_updaters{},
 	_postphysics_updaters{}, _prerender_updaters{}, _render_updaters{},
 	_update_interval{ 0.f }, _update_timeout{ 0.f }, _render_interval{ 0.f }, _render_timeout{ 0.f },
-	_update_enabled{ true }, _render_enabled{ true }
+	_update_enabled{ true }, _render_enabled{ true },
+	_transform_locked{ false }, _gridspace_locked{ false }
 {}
 
 template <mv::uint dims>
@@ -209,8 +216,36 @@ mv::Universe<dims>::Universe(
 	_behaviour_updaters{}, _prephysics_updaters{}, _physics_updaters{},
 	_postphysics_updaters{}, _prerender_updaters{}, _render_updaters{},
 	_update_interval{ 0.f }, _update_timeout{ 0.f }, _render_interval{ 0.f }, _render_timeout{ 0.f },
-	_update_enabled{ true }, _render_enabled{ true }
+	_update_enabled{ true }, _render_enabled{ true },
+	_transform_locked{ false }, _gridspace_locked{ false }
 {}
+
+
+template <mv::uint dims>
+void mv::Universe<dims>::remove_component(UpdateStage stage, type_id_type component_type_id, id_type component_id)
+{
+	switch (stage)
+	{
+	case mv::UpdateStage::behaviour:
+		this->_behaviour_updaters.remove(component_type_id, component_id);
+		break;
+	case mv::UpdateStage::prephysics:
+		this->_prephysics_updaters.remove(component_type_id, component_id);
+		break;
+	case mv::UpdateStage::physics:
+		this->_physics_updaters.remove(component_type_id, component_id);
+		break;
+	case mv::UpdateStage::postphysics:
+		this->_postphysics_updaters.remove(component_type_id, component_id);
+		break;
+	case mv::UpdateStage::prerender:
+		this->_prerender_updaters.remove(component_type_id, component_id);
+		break;
+	case mv::UpdateStage::render:
+		this->_render_updaters.remove(component_type_id, component_id);
+		break;
+	}
+}
 
 
 template <mv::uint dims>
@@ -225,19 +260,31 @@ void mv::Universe<dims>::update(float delta_time)
 	for (ComponentUpdaterBase<UpdateStage::behaviour>* updater : this->_behaviour_updaters) {
 		updater->update(delta_time);
 	}
+	this->_transform_locked = true;
+	this->_gridspace_locked = true;
 	// update gridspace in parallel thread
+	std::future<void> gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, this->_gridspace);
 	for (ComponentUpdaterBase<UpdateStage::prephysics>* updater : this->_prephysics_updaters) {
 		updater->update(delta_time);
 	}
 	// wait for gridspace update
+	gridspace_update_result.get();
+	this->_transform_locked = false;
+	this->_gridspace_locked = false;
 	for (ComponentUpdaterBase<UpdateStage::physics>* updater : this->_physics_updaters) {
 		updater->update(delta_time);
 	}
+	this->_transform_locked = true;
+	this->_gridspace_locked = true;
 	// update gridspace in parallel thread
+	gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, this->_gridspace);
 	for (ComponentUpdaterBase<UpdateStage::postphysics>* updater : this->_postphysics_updaters) {
 		updater->update(delta_time);
 	}
 	// wait for gridspace update
+	gridspace_update_result.get();
+	this->_transform_locked = false;
+	this->_gridspace_locked = false;
 }
 
 template <mv::uint dims>
@@ -250,11 +297,13 @@ void mv::Universe<dims>::render(float delta_time)
 		this->_render_timeout += this->_render_interval;
 		this->_render_timeout = this->_render_timeout >= 0.f ? this->_render_timeout : 0.f;
 
+		this->_transform_locked = true;
 		// calculate renderer model transform matrices in parallel thread
 		for (ComponentUpdaterBase<UpdateStage::prerender>* updater : this->_prerender_updaters) {
 			updater->update(delta_time);
 		}
 		// wait for model transform matrices to be calculated
+		this->_transform_locked = false;
 		for (ComponentUpdaterBase<UpdateStage::render>* updater : this->_render_updaters) {
 			updater->update(delta_time);
 			updater->render();
@@ -276,7 +325,8 @@ mv::Universe<dims>::Universe(Universe<dims>&& other) noexcept
 	_prerender_updaters{ std::move(other._prerender_updaters) }, _render_updaters{ std::move(other._render_updaters) },
 	_update_interval{ other._update_interval }, _render_interval{ other._render_interval },
 	_update_timeout{ other._update_timeout }, _render_timeout{ other._render_timeout },
-	_update_enabled{ other._update_enabled }, _render_enabled{ other._render_enabled }
+	_update_enabled{ other._update_enabled }, _render_enabled{ other._render_enabled },
+	_transform_locked{ other._transform_locked }, _gridspace_locked{ other._gridspace_locked }
 {
 	other._id = invalid_id;
 }
@@ -301,6 +351,8 @@ mv::Universe<dims>& mv::Universe<dims>::operator=(Universe<dims>&& other) noexce
 	this->_render_timeout = other._render_timeout;
 	this->_update_enabled = other._update_enabled;
 	this->_render_enabled = other._render_enabled;
+	this->_transform_locked = other._transform_locked;
+	this->_gridspace_locked = other._gridspace_locked;
 	other._id = invalid_id;
 	return *this;
 }
@@ -314,7 +366,7 @@ mv::id_type mv::Universe<dims>::id() const
 
 
 template <mv::uint dims>
-mv::Entity<dims>& mv::Universe<dims>::spawn_entity(const transform_type& transform) const
+mv::Entity<dims>& mv::Universe<dims>::spawn_entity() const
 {
 	return mv::multiverse().create_entity<dims>(this->id());
 }
@@ -344,6 +396,19 @@ template <mv::uint dims>
 void mv::Universe<dims>::set_render_enabled(bool enabled)
 {
 	this->_render_enabled = enabled;
+}
+
+
+template <mv::uint dims>
+bool mv::Universe<dims>::is_transform_locked() const
+{
+	return this->_transform_locked;
+}
+
+template <mv::uint dims>
+bool mv::Universe<dims>::is_gridspace_locked() const
+{
+	return this->_gridspace_locked;
 }
 
 

@@ -14,6 +14,7 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "TextObject.h"
+#include "ThreadPool.h"
 
 
 #ifndef MV_TICKFREQUENCY
@@ -58,8 +59,8 @@ void mv::Multiverse::init()
 
 	Renderer::instance().Init(this->_window);
 
-	// tell the resource manager where he can find the game data
 	this->_resource_manager = new ResourceManager("../Data/");
+	this->_thread_pool = new ThreadPool(std::min(1, static_cast<int>(std::thread::hardware_concurrency()) - 1));
 }
 
 void mv::Multiverse::cleanup()
@@ -77,7 +78,6 @@ void mv::Multiverse::run()
 		std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
 		std::chrono::duration<long long, std::nano>(1'000'000'000 / tick_frequency)));
 
-	auto& scene_manager = SceneManager::instance();
 	auto& input = InputManager::instance();
 	auto& renderer = Renderer::instance();
 
@@ -113,10 +113,17 @@ void mv::Multiverse::run()
 	}
 }
 
-const mv::ResourceManager& mv::Multiverse::resource_manager() const
+
+mv::ResourceManager& mv::Multiverse::resource_manager() const
 {
 	return *this->_resource_manager;
 }
+
+mv::ThreadPool& mv::Multiverse::thread_pool() const
+{
+	return *this->_thread_pool;
+}
+
 
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 inline mv::Entity<2>& mv::Multiverse::entity(id_type id)

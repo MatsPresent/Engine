@@ -100,7 +100,14 @@ namespace mv
 
 		class Gridspace
 		{
-			std::vector<id_type>* _cells;
+		private:
+			struct Entry
+			{
+				id_type entity_id;
+				position_type position;
+			};
+
+			std::vector<Entry>* _cells;
 			uint _cell_counts[dims]; // amount of cells allocated for each dimension
 			float _cell_sizes[dims]; // sizes of cells for each dimension
 
@@ -152,6 +159,9 @@ namespace mv
 		float _render_timeout;
 		bool _update_enabled;
 		bool _render_enabled;
+		
+		bool _transform_locked;
+		bool _gridspace_locked;
 
 
 		template <uint _ = dims, typename std::enable_if<_ == 2, int>::type = 0>
@@ -185,17 +195,18 @@ namespace mv
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
 		ComponentType& add_component(ComponentType&& component);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prephysics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::physics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::postphysics>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::prerender>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::render>, ComponentType>::value, int>::type = 0>
-		void remove_component(id_type id);
+		void remove_component(id_type component_id);
+		void remove_component(UpdateStage stage, type_id_type component_type_id, id_type component_id);
 
 		void update(float delta_time);
 		void render(float delta_time);
@@ -212,12 +223,23 @@ namespace mv
 		*/
 		id_type id() const;
 
-		Entity<dims>& spawn_entity(const transform_type& transform = transform_type{}) const;
+		Entity<dims>& spawn_entity() const;
 
 		void set_update_interval(float interval);
 		void set_update_enabled(bool enabled);
 		void set_render_interval(float interval);
 		void set_render_enabled(bool enabled);
+
+		/**
+			\brief is entity transform locked
+			checks if the transforms of entities in this universe are currently readonly
+		*/
+		bool is_transform_locked() const;
+		/**
+			\brief is gridspace locked
+			checks if the gridspace of this universe is currently inaccessible
+		*/
+		bool is_gridspace_locked() const;
 	};
 
 

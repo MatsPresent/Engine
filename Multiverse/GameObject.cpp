@@ -13,7 +13,7 @@ void mv::GameObject::Render() const
 	Renderer::instance().RenderTexture(*m_Texture, pos.x, pos.y);
 }
 
-void mv::GameObject::SetTexture(const std::string& filename)
+void mv::GameObject::SetTexture(const std::string&)
 {
 	//m_Texture = ResourceManager::instance().LoadTexture(filename);
 }

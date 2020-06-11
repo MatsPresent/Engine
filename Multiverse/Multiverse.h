@@ -6,6 +6,7 @@ struct SDL_Window;
 namespace mv
 {
 	class ResourceManager;
+	class ThreadPool;
 
 	template <uint dims>
 	class Entity;
@@ -21,6 +22,7 @@ namespace mv
 	private:
 		SDL_Window* _window;
 		ResourceManager* _resource_manager;
+		ThreadPool* _thread_pool;
 
 		IDList<Entity<2>, id_type> _entities2d;
 		IDList<Entity<3>, id_type> _entities3d;
@@ -39,7 +41,8 @@ namespace mv
 		void cleanup();
 		void run();
 
-		const ResourceManager& resource_manager() const;
+		ResourceManager& resource_manager() const;
+		ThreadPool& thread_pool() const;
 
 		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
 		Entity<2>& entity(id_type id);
