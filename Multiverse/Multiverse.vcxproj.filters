@@ -156,6 +156,9 @@
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Maths</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Start Files">

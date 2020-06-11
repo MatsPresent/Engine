@@ -15,6 +15,7 @@
 #include "ResourceManager.h"
 #include "TextObject.h"
 #include "ThreadPool.h"
+#include "Transform.h"
 
 
 #ifndef MV_TICKFREQUENCY
@@ -154,14 +155,32 @@ mv::Universe<3>& mv::Multiverse::universe(id_type id)
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 mv::Entity<2>& mv::Multiverse::create_entity(id_type universe_id)
 {
-	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id });
+	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id, Transform<2>{} });
+	this->_universes2d[universe_id].add_entity(id);
+	return this->_entities2d[id];
+}
+
+template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
+mv::Entity<2>& mv::Multiverse::create_entity(id_type universe_id, const Transform<2>& transform)
+{
+	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id, transform });
+	this->_universes2d[universe_id].add_entity(id);
 	return this->_entities2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 mv::Entity<3>& mv::Multiverse::create_entity(id_type universe_id)
 {
-	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id });
+	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id, Transform<3>{} });
+	this->_universes3d[universe_id].add_entity(id);
+	return this->_entities3d[id];
+}
+
+template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
+mv::Entity<3>& mv::Multiverse::create_entity(id_type universe_id, const Transform<3>& transform)
+{
+	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id, transform });
+	this->_universes3d[universe_id].add_entity(id);
 	return this->_entities3d[id];
 }
 
@@ -190,8 +209,10 @@ mv::Universe<3>& mv::Multiverse::create_universe(
 template mv::Entity<2>& mv::Multiverse::entity<2>(id_type);
 template mv::Universe<2>& mv::Multiverse::universe<2>(id_type);
 template mv::Entity<2>& mv::Multiverse::create_entity<2>(id_type);
+template mv::Entity<2>& mv::Multiverse::create_entity<2>(id_type, const Transform<2>&);
 template mv::Universe<2>& mv::Multiverse::create_universe<2>(uint, uint, float, float);
 template mv::Entity<3>& mv::Multiverse::entity<3>(id_type);
 template mv::Universe<3>& mv::Multiverse::universe<3>(id_type);
 template mv::Entity<3>& mv::Multiverse::create_entity<3>(id_type);
+template mv::Entity<3>& mv::Multiverse::create_entity<3>(id_type, const Transform<3>&);
 template mv::Universe<3>& mv::Multiverse::create_universe<3>(uint, uint, uint, float, float, float);

@@ -1,6 +1,10 @@
 #include "MultiversePCH.h"
 #include "Universe.h"
 
+#include <algorithm> // find
+#include <cmath>
+
+#include "Entity.h"
 #include "Multiverse.h"
 #include "Component.h"
 #include "ThreadPool.h"
@@ -63,7 +67,7 @@ template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
 mv::Universe<dims>::Gridspace::Gridspace(
 	mv::uint cell_count_x, mv::uint cell_count_y, float cell_size_x, float cell_size_y)
-	: _cells{ new std::vector<Entry>[cell_count_x * cell_count_y] },
+	: _cells{ new Cell[cell_count_x * cell_count_y]{} },
 	_cell_counts{ cell_count_x, cell_count_y }, _cell_sizes{ cell_size_x, cell_size_y }
 {}
 
@@ -71,22 +75,9 @@ template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 3, int>::type>
 mv::Universe<dims>::Gridspace::Gridspace(
 	mv::uint cell_count_x, mv::uint cell_count_y, mv::uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z)
-	: _cells{ new std::vector<Entry>[cell_count_x * cell_count_y * cell_count_z] },
+	: _cells{ new Cell[cell_count_x * cell_count_y * cell_count_z]{} },
 	_cell_counts{ cell_count_x, cell_count_y, cell_count_z }, _cell_sizes{ cell_size_x, cell_size_y, cell_size_z }
 {}
-
-template <mv::uint dims>
-inline mv::Universe<dims>::Gridspace::Gridspace(const Gridspace& other)
-	: _cells{ new std::vector<Entry>[other._cell_count()] }, _cell_counts{}, _cell_sizes{}
-{
-	for (uint i = 0; i < dims; ++i) {
-		this->_cell_counts[i] = other._cell_counts[i];
-		this->_cell_sizes[i] = other._cell_sizes[i];
-	}
-	for (uint i = 0; i < this->_cell_count(); ++i) {
-		this->_cells[i] = other._cells[i];
-	}
-}
 
 template <mv::uint dims>
 mv::Universe<dims>::Gridspace::Gridspace(Gridspace&& other) noexcept
@@ -109,24 +100,6 @@ mv::Universe<dims>::Gridspace::~Gridspace()
 
 
 template <mv::uint dims>
-typename mv::Universe<dims>::Gridspace& mv::Universe<dims>::Gridspace::operator=(const Gridspace& other)
-{
-	if (this == &other)
-		return *this;
-
-	this->_cells = new std::vector<Entry>[other._cell_count()];
-	for (uint i = 0; i < dims; ++i) {
-		this->_cell_counts[i] = other._cell_counts[i];
-		this->_cell_sizes[i] = other._cell_sizes[i];
-	}
-	for (uint i = 0; i < this->_cell_count(); ++i) {
-		this->_cells[i] = other._cells[i];
-	}
-
-	return *this;
-}
-
-template <mv::uint dims>
 typename mv::Universe<dims>::Gridspace& mv::Universe<dims>::Gridspace::operator=(Gridspace&& other) noexcept
 {
 	if (this == &other)
@@ -144,13 +117,50 @@ typename mv::Universe<dims>::Gridspace& mv::Universe<dims>::Gridspace::operator=
 
 
 template <mv::uint dims>
+void mv::Universe<dims>::Gridspace::add(id_type entity_id)
+{
+	Entity<dims>& e = mv::multiverse().entity<dims>(entity_id);
+	uint cell = this->_calculate_cell(e.get_transform().translate);
+	this->_cells[cell].entity_ids.push_back(entity_id);
+	++this->_cells[cell].count;
+}
+
+template <mv::uint dims>
+void mv::Universe<dims>::Gridspace::remove(id_type entity_id)
+{
+	Entity<dims>& e = mv::multiverse().entity<dims>(entity_id);
+	uint cell = this->_calculate_cell(e.get_transform().translate);
+	auto it = std::find(this->_cells[cell].entity_ids.begin(), this->_cells[cell].entity_ids.end(), entity_id);
+	*it = this->_cells[cell].entity_ids.back();
+	this->_cells[cell].entity_ids.pop_back();
+	--this->_cells[cell].count;
+}
+
+
+template <mv::uint dims>
 template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
 void mv::Universe<dims>::Gridspace::update_cells()
 {
-	for (uint y = 0; y < this->_cell_counts[1]; ++y) {
-		for (uint x = 0; x < this->_cell_counts[0]; ++x) {
-			
+	for (uint i = 0; i < this->_cell_count(); ++i) {
+		for (uint j = 0; j < this->_cells[i].count; ++j) {
+			Entity<2>& e = mv::multiverse().entity<2>(this->_cells[i].entity_ids[j]);
+			if (e._transform_read.translate == e._transform_write.translate) {
+				continue;
+			}
+			uint new_cell = this->_calculate_cell(e._transform_write.translate);
+			if (new_cell != i) {
+				this->_cells[new_cell].entity_ids.push_back(this->_cells[i].entity_ids[j]);
+				this->_cells[i].entity_ids[j] = this->_cells[i].entity_ids.back();
+				this->_cells[i].entity_ids.pop_back();
+				--this->_cells[i].count;
+				--i;
+				if (new_cell < i) {
+					++this->_cells[new_cell].count;
+				}
+			}
+			e._transform_read = e._transform_write;
 		}
+		this->_cells[i].count = static_cast<uint>(this->_cells[i].entity_ids.size());
 	}
 }
 
@@ -194,6 +204,26 @@ inline mv::uint mv::Universe<dims>::Gridspace::_cell_count() const
 }
 
 
+template <mv::uint dims>
+template <mv::uint _, typename std::enable_if<_ == 2, int>::type>
+inline mv::uint mv::Universe<dims>::Gridspace::_calculate_cell(const position_type& position) const
+{
+	auto mod = [](float n, uint d) {
+		return static_cast<uint>(n - std::floor(n / static_cast<float>(d)) * static_cast<float>(d));
+	};
+	uint x = mod(position.x() / this->_cell_sizes[0], this->_cell_counts[0]);
+	uint y = mod(position.y() / this->_cell_sizes[1], this->_cell_counts[1]);
+	return x + this->_cell_counts[0] * y;
+}
+
+template <mv::uint dims>
+template <mv::uint _, typename std::enable_if<_ == 3, int>::type>
+inline mv::uint mv::Universe<dims>::Gridspace::_calculate_cell(const position_type&) const
+{
+	return 0;
+}
+
+
 
 
 template <mv::uint dims>
@@ -220,6 +250,12 @@ mv::Universe<dims>::Universe(
 	_transform_locked{ false }, _gridspace_locked{ false }
 {}
 
+
+template <mv::uint dims>
+void mv::Universe<dims>::add_entity(id_type entity_id)
+{
+	this->_gridspace.add(entity_id);
+}
 
 template <mv::uint dims>
 void mv::Universe<dims>::remove_component(UpdateStage stage, type_id_type component_type_id, id_type component_id)
@@ -263,7 +299,7 @@ void mv::Universe<dims>::update(float delta_time)
 	this->_transform_locked = true;
 	this->_gridspace_locked = true;
 	// update gridspace in parallel thread
-	std::future<void> gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, this->_gridspace);
+	std::future<void> gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, std::ref(this->_gridspace));
 	for (ComponentUpdaterBase<UpdateStage::prephysics>* updater : this->_prephysics_updaters) {
 		updater->update(delta_time);
 	}
@@ -277,7 +313,7 @@ void mv::Universe<dims>::update(float delta_time)
 	this->_transform_locked = true;
 	this->_gridspace_locked = true;
 	// update gridspace in parallel thread
-	gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, this->_gridspace);
+	gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, std::ref(this->_gridspace));
 	for (ComponentUpdaterBase<UpdateStage::postphysics>* updater : this->_postphysics_updaters) {
 		updater->update(delta_time);
 	}
@@ -366,9 +402,9 @@ mv::id_type mv::Universe<dims>::id() const
 
 
 template <mv::uint dims>
-mv::Entity<dims>& mv::Universe<dims>::spawn_entity() const
+mv::Entity<dims>& mv::Universe<dims>::spawn_entity(const transform_type& transform) const
 {
-	return mv::multiverse().create_entity<dims>(this->id());
+	return mv::multiverse().create_entity<dims>(this->id(), transform);
 }
 
 
@@ -426,6 +462,7 @@ template mv::Universe<2>::Gridspace::Gridspace(uint, uint, float, float);
 template void mv::Universe<2>::Gridspace::update_cells();
 template std::vector<mv::Entity<2>*> mv::Universe<2>::Gridspace::entities_in_range(const position_type&, float) const;
 template mv::uint mv::Universe<2>::Gridspace::_cell_count() const;
+template mv::uint mv::Universe<2>::Gridspace::_calculate_cell(const position_type&) const;
 template class mv::Universe<3>;
 template mv::Universe<3>::Universe(id_type, uint, uint, uint, float, float, float);
 template class mv::Universe<3>::ComponentUpdaterList<mv::UpdateStage::behaviour>;
@@ -438,3 +475,4 @@ template mv::Universe<3>::Gridspace::Gridspace(uint, uint, uint, float, float, f
 template void mv::Universe<3>::Gridspace::update_cells();
 template std::vector<mv::Entity<3>*> mv::Universe<3>::Gridspace::entities_in_range(const position_type&, float) const;
 template mv::uint mv::Universe<3>::Gridspace::_cell_count() const;
+template mv::uint mv::Universe<3>::Gridspace::_calculate_cell(const position_type&) const;

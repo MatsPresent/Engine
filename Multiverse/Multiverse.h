@@ -9,6 +9,8 @@ namespace mv
 	class ThreadPool;
 
 	template <uint dims>
+	class Transform;
+	template <uint dims>
 	class Entity;
 	template <uint dims>
 	class Universe;
@@ -56,8 +58,12 @@ namespace mv
 
 		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
 		Entity<2>& create_entity(id_type universe_id);
+		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
+		Entity<2>& create_entity(id_type universe_id, const Transform<2>& transform);
 		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
 		Entity<3>& create_entity(id_type universe_id);
+		template <uint dims, typename std::enable_if<dims == 3, int>::type = 0>
+		Entity<3>& create_entity(id_type universe_id, const Transform<3>& transform);
 
 		template <uint dims, typename std::enable_if<dims == 2, int>::type = 0>
 		Universe<2>& create_universe(

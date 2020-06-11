@@ -21,6 +21,7 @@ namespace mv
 	class Entity final
 	{
 		friend Multiverse;
+		friend Universe<dims>;
 
 	public:
 		using transform_type = Transform<dims>;
@@ -94,13 +95,14 @@ namespace mv
 		id_type _id; // id of this entity, unique in the multiverse
 		id_type _universe_id; // id of the universe in which the entity resides
 
-		transform_type _transform;
+		transform_type _transform_read;
+		transform_type _transform_write;
 		transform_type _velocity;
 
 		std::map<type_id_type, std::vector<id_type>> _component_ids; // unique ids of attached components per component type
 
 
-		Entity(id_type id, id_type universe_id);
+		Entity(id_type id, id_type universe_id, const transform_type& transform);
 
 	public:
 		Entity(const Entity&) = delete;

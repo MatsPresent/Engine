@@ -101,13 +101,13 @@ namespace mv
 		class Gridspace
 		{
 		private:
-			struct Entry
+			struct Cell
 			{
-				id_type entity_id;
-				position_type position;
+				std::vector<id_type> entity_ids;
+				uint count;
 			};
 
-			std::vector<Entry>* _cells;
+			Cell* _cells;
 			uint _cell_counts[dims]; // amount of cells allocated for each dimension
 			float _cell_sizes[dims]; // sizes of cells for each dimension
 
@@ -116,13 +116,16 @@ namespace mv
 			Gridspace(uint cell_count_x, uint cell_count_y, float cell_size_x, float cell_size_y);
 			template <uint _ = dims, typename std::enable_if<_ == 3, int>::type = 0>
 			Gridspace(uint cell_count_x, uint cell_count_y, uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z);
-			Gridspace(const Gridspace& other);
+			Gridspace(const Gridspace&) = delete;
 			Gridspace(Gridspace&& other) noexcept;
 
 			~Gridspace();
 
-			Gridspace& operator=(const Gridspace& other);
+			Gridspace& operator=(const Gridspace&) = delete;
 			Gridspace& operator=(Gridspace&& other) noexcept;
+
+			void add(id_type entity_id);
+			void remove(id_type entity_id);
 
 			template <uint _ = dims, typename std::enable_if<_ == 2, int>::type = 0>
 			void update_cells();
@@ -139,6 +142,11 @@ namespace mv
 			uint _cell_count() const;
 			template <uint _ = dims, typename std::enable_if<_ == 3, int>::type = 0>
 			uint _cell_count() const;
+
+			template <uint _ = dims, typename std::enable_if<_ == 2, int>::type = 0>
+			uint _calculate_cell(const position_type& position) const;
+			template <uint _ = dims, typename std::enable_if<_ == 3, int>::type = 0>
+			uint _calculate_cell(const position_type& position) const;
 		};
 
 
@@ -168,6 +176,8 @@ namespace mv
 		Universe(id_type id, uint cell_count_x, uint cell_count_y, float cell_size_x, float cell_size_y);
 		template <uint _ = dims, typename std::enable_if<_ == 3, int>::type = 0>
 		Universe(id_type id, uint cell_count_x, uint cell_count_y, uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z);
+
+		void add_entity(id_type entity_id);
 
 		template <typename ComponentType, typename std::enable_if<std::is_base_of<Component<dims, UpdateStage::behaviour>, ComponentType>::value, int>::type = 0>
 		ComponentType& get_component(id_type component_id) const;
@@ -223,7 +233,7 @@ namespace mv
 		*/
 		id_type id() const;
 
-		Entity<dims>& spawn_entity() const;
+		Entity<dims>& spawn_entity(const transform_type& transform = transform_type{}) const;
 
 		void set_update_interval(float interval);
 		void set_update_enabled(bool enabled);
