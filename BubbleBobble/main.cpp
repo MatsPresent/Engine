@@ -23,6 +23,9 @@ int main(int, char**)
 	mv::Universe2D& universe = mv::multiverse().create_universe<2>();
 	auto& e = universe.spawn_entity();
 	e.add_component<mv::SpriteRenderComponent>(mv::multiverse().resource_manager().get<mv::Texture>("sprites0.png"));
+	auto t = e.get_transform();
+	t.translate = { 40.f, 70.f };
+	e.set_transform(t);
 
 	mv::BinaryReader level_reader(mv::multiverse().resource_manager().get<mv::Blob>("leveldata.dat"));
 	std::vector<Level> levels(100);

@@ -91,6 +91,12 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionShape.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Font.cpp">
@@ -159,6 +165,12 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Maths</Filter>
     </ClCompile>
+    <ClCompile Include="CollisionShape.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Start Files">
@@ -178,6 +190,9 @@
     </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{2d98f738-a05f-4386-a175-2769ae74b5b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{1cdf8096-efc6-45d1-827b-081753b94b23}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +219,9 @@
     </None>
     <None Include="ThreadPool.inl">
       <Filter>Utility</Filter>
+    </None>
+    <None Include="CollisionShape.inl">
+      <Filter>Collision</Filter>
     </None>
   </ItemGroup>
 </Project>

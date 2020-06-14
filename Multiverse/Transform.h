@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector.h"
+#include "Matrix.h"
 #pragma warning(push)
 #pragma warning(disable : 4201)
 #include "glm/gtc/quaternion.hpp"
@@ -22,6 +23,8 @@ namespace mv
 
 		bool operator==(const Transform<2>& rhs) const;
 		bool operator!=(const Transform<2>& rhs) const;
+
+		mat3f transform_matrix() const;
 	};
 
 	template <>
@@ -36,6 +39,8 @@ namespace mv
 
 		bool operator==(const Transform<3>& rhs) const;
 		bool operator!=(const Transform<3>& rhs) const;
+
+		mat4f transform_matrix() const;
 	};
 
 	using Transform2D = Transform<2>;

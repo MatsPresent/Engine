@@ -130,20 +130,6 @@ inline ComponentType& mv::Universe<dims>::ComponentUpdaterList<stage>::add(Compo
 
 
 template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
-inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
-{
-	return this->_behaviour_updaters.get<ComponentType>(component_id);
-}
-
-template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::prephysics>, ComponentType>::value,int>::type>
-inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
-{
-	return this->_prephysics_updaters.get<ComponentType>(component_id);
-}
-
-template <mv::uint dims>
 template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::physics>, ComponentType>::value,int>::type>
 inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
 {
@@ -155,6 +141,20 @@ template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Co
 inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
 {
 	return this->_postphysics_updaters.get<ComponentType>(component_id);
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::input>, ComponentType>::value,int>::type>
+inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
+{
+	return this->_input_updaters.get<ComponentType>(component_id);
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
+inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id) const
+{
+	return this->_behaviour_updaters.get<ComponentType>(component_id);
 }
 
 template <mv::uint dims>
@@ -173,20 +173,6 @@ inline ComponentType& mv::Universe<dims>::get_component(mv::id_type component_id
 
 
 template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
-inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
-{
-	return this->_behaviour_updaters.add(std::move(component));
-}
-
-template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::prephysics>, ComponentType>::value,int>::type>
-inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
-{
-	return this->_prephysics_updaters.add(std::move(component));
-}
-
-template <mv::uint dims>
 template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::physics>, ComponentType>::value,int>::type>
 inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
 {
@@ -198,6 +184,20 @@ template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Co
 inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
 {
 	return this->_postphysics_updaters.add(std::move(component));
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::input>, ComponentType>::value,int>::type>
+inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
+{
+	return this->_input_updaters.add(std::move(component));
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
+inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& component)
+{
+	return this->_behaviour_updaters.add(std::move(component));
 }
 
 template <mv::uint dims>
@@ -215,20 +215,6 @@ inline ComponentType& mv::Universe<dims>::add_component(ComponentType&& componen
 }
 
 template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
-inline void mv::Universe<dims>::remove_component(id_type component_id)
-{
-	this->_behaviour_updaters.remove(type_id<ComponentType>(), component_id);
-}
-
-template <mv::uint dims>
-template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::prephysics>, ComponentType>::value,int>::type>
-inline void mv::Universe<dims>::remove_component(id_type component_id)
-{
-	this->_prephysics_updaters.remove(type_id<ComponentType>(), component_id);
-}
-
-template <mv::uint dims>
 template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::physics>, ComponentType>::value,int>::type>
 inline void mv::Universe<dims>::remove_component(id_type component_id)
 {
@@ -240,6 +226,20 @@ template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Co
 inline void mv::Universe<dims>::remove_component(id_type component_id)
 {
 	this->_postphysics_updaters.remove(type_id<ComponentType>(), component_id);
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::input>, ComponentType>::value, int>::type>
+inline void mv::Universe<dims>::remove_component(id_type component_id)
+{
+	this->_input_updaters.remove(type_id<ComponentType>(), component_id);
+}
+
+template <mv::uint dims>
+template <typename ComponentType, typename std::enable_if<std::is_base_of<mv::Component<dims, mv::UpdateStage::behaviour>, ComponentType>::value,int>::type>
+inline void mv::Universe<dims>::remove_component(id_type component_id)
+{
+	this->_behaviour_updaters.remove(type_id<ComponentType>(), component_id);
 }
 
 template <mv::uint dims>

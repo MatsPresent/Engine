@@ -9,6 +9,7 @@
 #include "UpdateStage.h"
 #include "Multiverse.h"
 #include "Transform.h"
+#include "Collider.h"
 
 namespace mv
 {
@@ -25,6 +26,7 @@ namespace mv
 
 	public:
 		using transform_type = Transform<dims>;
+		using position_type = decltype(transform_type::translate);
 
 	private:
 		template <typename ComponentType>
@@ -95,14 +97,18 @@ namespace mv
 		id_type _id; // id of this entity, unique in the multiverse
 		id_type _universe_id; // id of the universe in which the entity resides
 
-		transform_type _transform_read;
-		transform_type _transform_write;
+		transform_type _transform_buffer;
+		transform_type _transform;
 		transform_type _velocity;
+		uint _gridspace_cell_idx;
 
 		std::map<type_id_type, std::vector<id_type>> _component_ids; // unique ids of attached components per component type
 
+		std::vector<Collider<dims>> _colliders;
+		bool _is_static;
 
-		Entity(id_type id, id_type universe_id, const transform_type& transform);
+
+		Entity(id_type id, id_type universe_id, const transform_type& transform, bool is_static);
 
 	public:
 		Entity(const Entity&) = delete;
@@ -128,6 +134,8 @@ namespace mv
 		const transform_type& get_velocity() const;
 		void set_transform(const transform_type& transform);
 		void set_velocity(const transform_type& velocity);
+
+		bool is_static() const;
 
 		/**
 			\brief get component of type
@@ -158,6 +166,12 @@ namespace mv
 		ComponentType& add_component(Args&&... args);
 		template <typename ComponentType>
 		bool remove_component(id_type component_id);
+
+		void add_collider(const Collider<dims>& collider);
+		void add_collider(Collider<dims>&& collider);
+
+	private:
+		void _solve_collision(Entity<dims>& other);
 	};
 
 	template <uint dims, typename ComponentType>

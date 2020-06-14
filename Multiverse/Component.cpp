@@ -84,14 +84,14 @@ void mv::Component<dims, mv::UpdateStage::render>::render() const
 
 
 
+template class mv::Component<2, mv::UpdateStage::input>;
 template class mv::Component<2, mv::UpdateStage::behaviour>;
-template class mv::Component<2, mv::UpdateStage::prephysics>;
 template class mv::Component<2, mv::UpdateStage::physics>;
 template class mv::Component<2, mv::UpdateStage::postphysics>;
 template class mv::Component<2, mv::UpdateStage::prerender>;
 template class mv::Component<2, mv::UpdateStage::render>;
+template class mv::Component<3, mv::UpdateStage::input>;
 template class mv::Component<3, mv::UpdateStage::behaviour>;
-template class mv::Component<3, mv::UpdateStage::prephysics>;
 template class mv::Component<3, mv::UpdateStage::physics>;
 template class mv::Component<3, mv::UpdateStage::postphysics>;
 template class mv::Component<3, mv::UpdateStage::prerender>;

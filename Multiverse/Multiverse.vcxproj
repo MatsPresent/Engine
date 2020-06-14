@@ -216,11 +216,13 @@ xcopy "$(SolutionDir)3rdParty\SDL2_ttf\lib\x64\*.dll" "$(OutputPath)" /R /Y</Com
   <ItemGroup>
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="Blob.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="CollisionShape.h" />
     <ClInclude Include="IDList.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Matrix.h" />
@@ -248,10 +250,12 @@ xcopy "$(SolutionDir)3rdParty\SDL2_ttf\lib\x64\*.dll" "$(OutputPath)" /R /Y</Com
   <ItemGroup>
     <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="Blob.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="CollisionShape.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Multiverse.cpp" />
     <ClCompile Include="MultiversePCH.cpp">
@@ -279,6 +283,7 @@ xcopy "$(SolutionDir)3rdParty\SDL2_ttf\lib\x64\*.dll" "$(OutputPath)" /R /Y</Com
     <None Include="BinaryReader.inl" />
     <None Include="Entity.inl" />
     <None Include="Event.inl" />
+    <None Include="CollisionShape.inl" />
     <None Include="IDList.inl" />
     <None Include="Matrix.inl" />
     <None Include="ThreadPool.inl" />

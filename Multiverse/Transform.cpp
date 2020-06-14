@@ -16,6 +16,12 @@ bool mv::Transform<2>::operator!=(const Transform<2>& rhs) const
 }
 
 
+mv::mat3f mv::Transform<2>::transform_matrix() const
+{
+	return mat3f::transform(translate, rotate, scale);
+}
+
+
 
 
 mv::Transform<3>::Transform()
@@ -31,6 +37,14 @@ bool mv::Transform<3>::operator!=(const Transform<3>& rhs) const
 {
 	return !(*this == rhs);
 }
+
+
+mv::mat4f mv::Transform<3>::transform_matrix() const
+{
+	return mat4f::identity();//mat4f::transform(translate, rotate, scale);
+}
+
+
 
 
 template class mv::Transform<2>;

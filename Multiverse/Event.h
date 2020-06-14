@@ -53,21 +53,21 @@ namespace mv
 		friend OwnerType;
 
 	public:
-		using EventBase::callback_type;
-		using EventBase::id_type;
+		using EventBase<EventArgs...>::callback_type;
+		using EventBase<EventArgs...>::id_type;
 
 	private:
-		using EventBase::raise;
+		using EventBase<EventArgs...>::raise;
 	};
 
 	template <typename... EventArgs>
 	class Event<void, EventArgs...> : public EventBase<EventArgs...>
 	{
 	public:
-		using EventBase::callback_type;
-		using EventBase::id_type;
+		using EventBase<EventArgs...>::callback_type;
+		using EventBase<EventArgs...>::id_type;
 
-		using EventBase::raise;
+		using EventBase<EventArgs...>::raise;
 	};
 }
 

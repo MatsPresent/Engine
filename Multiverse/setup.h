@@ -10,6 +10,7 @@
 
 namespace mv
 {
+	using byte = unsigned char;
 	using uint = unsigned int;
 	using id_type = uint;
 	using size_type = uint;
