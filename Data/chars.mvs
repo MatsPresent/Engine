@@ -1,0 +1,47 @@
+{
+	"textures": [
+		{
+			"texture": "sprites0.png",
+			"rows": {
+				"amount": 16
+			}
+			"columns": {
+				"amount": 8
+				"gutter": 18
+			}
+		},
+		{
+			"texture": "sprites1.png",
+			"rows": {
+				"amount": 16
+			}
+			"columns": {
+				"amount": 8
+				"gutter": 18
+			},
+			"amount": 96
+		}
+	]
+	"animations": [
+		{
+			"start": 0
+			"frames": 8
+			"duration": 1.0
+		},
+		{
+			"start": 8
+			"frames": 8
+			"duration": 1.0
+		},
+		{
+			"start": 16
+			"frames": 8
+			"duration": 1.0
+		},
+		{
+			"start": 24
+			"frames": 8
+			"duration": 1.0
+		},
+	]
+}

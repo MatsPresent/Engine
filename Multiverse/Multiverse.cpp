@@ -4,17 +4,14 @@
 #include <chrono>
 #include <type_traits>
 
+#include <SDL.h>
 #include "Entity.h"
 #include "Universe.h"
 
-#include "GameObject.h"
-#include "InputManager.h"
-#include "Scene.h"
-#include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
-#include "TextObject.h"
 #include "ThreadPool.h"
+
 #include "Transform.h"
 
 
@@ -48,28 +45,20 @@ mv::Multiverse& mv::Multiverse::get()
 
 void mv::Multiverse::init()
 {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
-	}
-	
-	this->_window = SDL_CreateWindow("Programming 4 assignment", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		640, 480, SDL_WINDOW_OPENGL);
-	if (this->_window == nullptr) {
-		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
-	}
-
-	Renderer::instance().Init(this->_window);
-
-	this->_resource_manager = new ResourceManager("../Data/");
+	Renderer::Settings renderer_settings{};
+	renderer_settings.window.title = "Window Title";
+	renderer_settings.window.width = 640;
+	renderer_settings.window.height = 480;
 	this->_thread_pool = new ThreadPool(std::min(1, static_cast<int>(std::thread::hardware_concurrency()) - 1));
+	this->_renderer = new Renderer(renderer_settings);
+	this->_resource_manager = new ResourceManager("../Data/");
 }
 
 void mv::Multiverse::cleanup()
 {
-	Renderer::instance().Destroy();
 	delete this->_resource_manager;
-	SDL_DestroyWindow(this->_window);
-	this->_window = nullptr;
+	delete this->_renderer;
+	delete this->_thread_pool;
 	SDL_Quit();
 }
 
@@ -78,9 +67,6 @@ void mv::Multiverse::run()
 	constexpr std::chrono::high_resolution_clock::duration tick_duration(
 		std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(
 		std::chrono::duration<long long, std::nano>(1'000'000'000 / tick_frequency)));
-
-	auto& input = InputManager::instance();
-	auto& renderer = Renderer::instance();
 
 	std::chrono::high_resolution_clock::time_point prev_time = std::chrono::high_resolution_clock::now();
 	std::chrono::high_resolution_clock::duration behind_time(0);
@@ -93,7 +79,7 @@ void mv::Multiverse::run()
 		prev_time = curr_time;
 
 		while (behind_time > tick_duration) {
-			exit = !input.ProcessInput() || exit;
+			exit = true || exit;
 			for (Universe<2>& universe : this->_universes2d) {
 				universe.update(this->tick_interval);
 			}
@@ -103,17 +89,21 @@ void mv::Multiverse::run()
 			behind_time -= tick_duration;
 		}
 
-		SDL_RenderClear(renderer.GetSDLRenderer());
 		for (Universe<2>& universe : this->_universes2d) {
 			universe.render(frame_interval);
 		}
 		for (Universe<3>& universe : this->_universes3d) {
 			universe.render(frame_interval);
 		}
-		SDL_RenderPresent(renderer.GetSDLRenderer());
+		this->_renderer->render();
 	}
 }
 
+
+mv::Renderer& mv::Multiverse::renderer() const
+{
+	return *this->_renderer;
+}
 
 mv::ResourceManager& mv::Multiverse::resource_manager() const
 {

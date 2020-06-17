@@ -1,9 +1,5 @@
 #include "Multiverse.h"
-#include "SceneManager.h"
 #include "ResourceManager.h"
-#include "GameObject.h"
-#include "Scene.h"
-#include "TextObject.h"
 #include "Transform.h"
 
 #include <memory>
@@ -16,6 +12,7 @@
 #include "Level.h"
 
 #include <vector>
+#include <vld.h>
 
 int main(int, char**)
 {

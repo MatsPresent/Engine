@@ -1,28 +1,54 @@
 #pragma once
-#include "Singleton.h"
+#include "setup.h"
+
+#include <string>
+
+#include "Vector.h"
 
 struct SDL_Window;
-struct SDL_Renderer;
 
 namespace mv
 {
-	class Texture2D;
-	/**
-	 * Simple RAII wrapper for the SDL renderer
-	 */
-	class Renderer final : public Singleton<Renderer>
+	class Multiverse;
+
+	class Renderer final
 	{
+		friend Multiverse;
+
 	public:
-		void Init(SDL_Window* window);
-		void Render() const;
-		void Destroy();
+		struct Settings
+		{
+			struct {
+				std::string title;
+				uint16 width;
+				uint16 height;
+			} window;
+			vec3f colour;
+		};
 
-		void RenderTexture(const Texture2D& texture, float x, float y) const;
-		void RenderTexture(const Texture2D& texture, float x, float y, float width, float height) const;
-
-		SDL_Renderer* GetSDLRenderer() const { return m_Renderer; }
 	private:
-		SDL_Renderer* m_Renderer{};
+		Settings _settings;
+		SDL_Window* _window;
+		void* _context;
+
+
+		Renderer(const Settings& settings);
+		Renderer(const Renderer&) = delete;
+		Renderer(Renderer&& other) noexcept;
+
+	public:
+		~Renderer();
+
+	private:
+		Renderer& operator=(const Renderer&) = delete;
+		Renderer& operator=(Renderer&& other) noexcept;
+
+		void _init();
+
+		void render() const;
+
+	public:
+
 	};
 }
 

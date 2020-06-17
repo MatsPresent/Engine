@@ -2,72 +2,54 @@
 #include "Texture.h"
 #include "Renderer.h"
 
-#include <SDL_image.h>
+#include "glad/glad.h"
+#include "stb_image.h"
 
 
 mv::Texture::Texture(const std::string& path)
-	: Resource(), _texture{ IMG_LoadTexture(Renderer::instance().GetSDLRenderer(), path.data()) }
+	: Resource(path), _texture_id{ 0 }, _width{}, _height{}
+{}
+
+mv::Texture::Texture(std::string&& path)
+	: Resource(std::move(path)), _texture_id{ 0 }, _width{}, _height{}
+{}
+
+
+mv::size_type mv::Texture::width() const
 {
-	if (!this->_texture) {
-		throw std::runtime_error(std::string("Failed to load texture: ") + SDL_GetError());
+	return this->_width;
+}
+
+mv::size_type mv::Texture::height() const
+{
+	return this->_height;
+}
+
+
+void mv::Texture::_load()
+{
+	static const int texture_formats[4]{ GL_RED, GL_RG, GL_RGB, GL_RGBA };
+	int width, height, channel_count;
+	byte* data = stbi_load(this->path().c_str(), &width, &height, &channel_count, 0);
+	if (!data) {
+		throw std::runtime_error(std::string("Failed to load texture"));
 	}
+	this->_width = width;
+	this->_height = height;
+	this->_channel_count = channel_count;
+	int format = texture_formats[channel_count - 1];
+	glGenTextures(1, &this->_texture_id);
+	glBindTexture(GL_TEXTURE_2D, this->_texture_id);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	stbi_image_free(data);
 }
 
-mv::Texture::Texture(Texture&& other) noexcept
-	: Resource(std::move(other)), _texture{ other._texture }
+void mv::Texture::_unload()
 {
-	other._texture = nullptr;
-}
-
-
-mv::Texture::~Texture()
-{
-	SDL_DestroyTexture(this->_texture);
-}
-
-
-mv::Texture& mv::Texture::operator=(Texture&& other) noexcept
-{
-	if (this == &other) {
-		return *this;
-	}
-	this->Resource::operator=(std::move(other));
-	this->_texture = other._texture;
-	other._texture = nullptr;
-	return *this;
-}
-
-
-int mv::Texture::width() const
-{
-	int width;
-	SDL_QueryTexture(this->_texture, nullptr, nullptr, &width, nullptr);
-	return width;
-}
-
-int mv::Texture::height() const
-{
-	int height;
-	SDL_QueryTexture(this->_texture, nullptr, nullptr, nullptr, &height);
-	return height;
-}
-
-mv::vec2i mv::Texture::dims() const
-{
-	vec2i dims;
-	SDL_QueryTexture(this->_texture, nullptr, nullptr, &dims.x(), &dims.y());
-	return dims;
-}
-
-void mv::Texture::render(int x, int y, int w, int h) const
-{
-	SDL_Rect dst{ x, y, w, h };
-	SDL_RenderCopy(Renderer::instance().GetSDLRenderer(), this->_texture, nullptr, &dst);
-}
-
-void mv::Texture::render(vec2f translate, vec2f scale) const
-{
-	vec2i dims = this->dims();
-	this->render(static_cast<int>(translate.x()), static_cast<int>(translate.y()),
-		static_cast<int>(dims.x() * scale.x()), static_cast<int>(dims.y() * scale.y()));
+	glDeleteTextures(1, &this->_texture_id);
+	this->_texture_id = 0;
 }

@@ -28,7 +28,7 @@ void mv::ThreadPool::_task_loop()
 	while (true) {
 		std::unique_lock<std::mutex> lock(this->_task_mutex);
 		this->_condition.wait(lock,	[this]() { return this->_shutdown || !this->_task_queue.empty(); });
-		if (this->_shutdown && !this->_task_queue.empty())
+		if (this->_shutdown && this->_task_queue.empty())
 			return;
 		std::function<void()> task = std::move(this->_task_queue.front());
 		this->_task_queue.pop();

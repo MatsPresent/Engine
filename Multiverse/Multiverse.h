@@ -1,10 +1,10 @@
 #pragma once
 #include "setup.h"
 #include "IDList.h"
-struct SDL_Window;
 
 namespace mv
 {
+	class Renderer;
 	class ResourceManager;
 	class ThreadPool;
 
@@ -22,7 +22,7 @@ namespace mv
 		static const uint tick_frequency;
 
 	private:
-		SDL_Window* _window;
+		Renderer* _renderer;
 		ResourceManager* _resource_manager;
 		ThreadPool* _thread_pool;
 
@@ -43,6 +43,7 @@ namespace mv
 		void cleanup();
 		void run();
 
+		Renderer& renderer() const;
 		ResourceManager& resource_manager() const;
 		ThreadPool& thread_pool() const;
 

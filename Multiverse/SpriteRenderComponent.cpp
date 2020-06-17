@@ -14,5 +14,4 @@ void mv::SpriteRenderComponent::update(float)
 
 void mv::SpriteRenderComponent::render() const
 {
-	this->_texture->render(this->entity().get_transform().translate, this->entity().get_transform().scale);
 }

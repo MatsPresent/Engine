@@ -4,29 +4,26 @@
 
 namespace mv
 {
-	class Multiverse;
 	class Resource;
 
 	class ResourceManager final
 	{
-		friend Multiverse;
-
 	private:
 		std::string _data_path;
 		std::unordered_map<std::string, Resource*> _resources;
 
 
+	public:
 		ResourceManager(const std::string& data_path);
 		ResourceManager(const ResourceManager&) = delete;
-		ResourceManager(ResourceManager&&) noexcept = delete;
+		ResourceManager(ResourceManager&& other) noexcept;
 
-	public:
 		~ResourceManager();
 
-	private:
 		ResourceManager& operator=(const ResourceManager&) = delete;
-		ResourceManager& operator=(ResourceManager&&) noexcept = delete;
+		ResourceManager& operator=(ResourceManager&& other) noexcept;
 
+	private:
 		void _init();
 		void _register_resource(const std::string& path, const std::string& extension);
 

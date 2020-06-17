@@ -5,7 +5,7 @@
 
 namespace mv
 {
-	class Blob : public Resource
+	class Blob final : public Resource
 	{
 	private:
 		size_type _size;
@@ -13,13 +13,7 @@ namespace mv
 
 	public:
 		Blob(const std::string& path);
-		Blob(const Blob&) = delete;
-		Blob(Blob&& other) noexcept;
-
-		~Blob();
-
-		Blob& operator=(const Blob&) = delete;
-		Blob& operator=(Blob&& other) noexcept;
+		Blob(std::string&& path);
 
 		/**
 			\brief get size in bytes
@@ -33,5 +27,9 @@ namespace mv
 			\brief get pointer to buffer
 		*/
 		const char* data() const;
+
+	private:
+		void _load() override;
+		void _unload() override;
 	};
 }

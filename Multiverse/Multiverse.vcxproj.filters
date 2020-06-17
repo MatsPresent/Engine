@@ -1,42 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="Font.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MultiversePCH.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneObject.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture2D.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextObject.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Position.h">
-      <Filter>Start Files</Filter>
-    </ClInclude>
     <ClInclude Include="SpriteRenderComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -97,38 +61,15 @@
     <ClInclude Include="CollisionShape.h">
       <Filter>Collision</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteSheet.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiversePCH.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Font.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MultiversePCH.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextObject.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture2D.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Position.cpp">
-      <Filter>Start Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
@@ -171,11 +112,18 @@
     <ClCompile Include="Collider.cpp">
       <Filter>Collision</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSheet.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiversePCH.cpp" />
+    <ClCompile Include="stb_image.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Start Files">
-      <UniqueIdentifier>{f2044a2e-585e-4fce-a497-cc7b93712d23}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components">
       <UniqueIdentifier>{150e1916-54cf-467e-b4b1-dffe30cc3c69}</UniqueIdentifier>
     </Filter>
@@ -193,6 +141,9 @@
     </Filter>
     <Filter Include="Collision">
       <UniqueIdentifier>{1cdf8096-efc6-45d1-827b-081753b94b23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{fe504302-2ef4-42b9-bfb0-6e12aacef28d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

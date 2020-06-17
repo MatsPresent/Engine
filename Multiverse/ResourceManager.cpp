@@ -9,22 +9,40 @@
 #include "Multiverse.h"
 #include "Renderer.h"
 #include "Texture.h"
-#include "Font.h"
 #include "Blob.h"
+#include "SpriteSheet.h"
 
 
 mv::ResourceManager::ResourceManager(const std::string& data_path)
-	: _data_path{ std::filesystem::path(data_path).generic_string() }
+	: _data_path{ std::filesystem::path(data_path).generic_string() }, _resources()
 {
 	this->_init();
 }
 
+mv::ResourceManager::ResourceManager(ResourceManager&& other) noexcept
+	: _data_path(std::move(other._data_path)), _resources(std::move(other._resources))
+{}
+
+
 mv::ResourceManager::~ResourceManager()
 {
+	for (auto& e : this->_resources) {
+		e.second->unload();
+	}
 	for (auto& e : this->_resources) {
 		delete e.second;
 	}
 	this->_resources.clear();
+}
+
+
+mv::ResourceManager& mv::ResourceManager::operator=(ResourceManager&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+	this->_data_path = std::move(other._data_path);
+	this->_resources = std::move(other._resources);
+	return *this;
 }
 
 
@@ -45,6 +63,10 @@ void mv::ResourceManager::_init()
 			this->_register_resource(e.path().generic_string(), e.path().extension().generic_string());
 		}
 	}
+
+	for (auto& e : this->_resources) {
+		e.second->load();
+	}
 }
 
 void mv::ResourceManager::_register_resource(const std::string& path, const std::string& extension)
@@ -55,6 +77,9 @@ void mv::ResourceManager::_register_resource(const std::string& path, const std:
 	}
 	else if (extension == ".otf" || extension == ".ttf") {
 		// load font
+	}
+	else if (extension == ".mvs") {
+		this->_resources.emplace(id, new SpriteSheet(path));
 	}
 	else {
 		this->_resources.emplace(id, new Blob(path));
@@ -72,18 +97,6 @@ const T* mv::ResourceManager::get(const std::string& id) const
 	return dynamic_cast<const T*>(it->second);
 }
 
-/*std::shared_ptr<mv::Texture2D> mv::ResourceManager::LoadTexture(const std::string& file) const
-{
-	const auto fullPath = this->_data_path + file;
-	auto texture = IMG_LoadTexture(Renderer::instance().GetSDLRenderer(), fullPath.c_str());
-	return std::make_shared<Texture2D>(texture);
-}
-
-std::shared_ptr<mv::Font> mv::ResourceManager::LoadFont(const std::string& file, unsigned int size) const
-{
-	return std::make_shared<Font>(this->_data_path + file, size);
-}
-*/
-
 template const mv::Texture* mv::ResourceManager::get<mv::Texture>(const std::string&) const;
+template const mv::SpriteSheet* mv::ResourceManager::get<mv::SpriteSheet>(const std::string&) const;
 template const mv::Blob* mv::ResourceManager::get<mv::Blob>(const std::string&) const;

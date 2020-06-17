@@ -585,7 +585,7 @@ bool mv::CollisionShape<2>::Ellipse::collides(const Ellipse& other, const mat3f&
 	bool a_in_b{ static_cast<vec2f>(ta * vec3f{ this->centre(), 1.f }).squared_magnitude() < 1.f };
 
 	float angle{ 0.f };
-	float delta_a{ static_cast<float>(2. * M_PI / 3.) };
+	float delta_a{ static_cast<float>(2. * pi / 3.) };
 	vec2f p[3]{ vec2f{}, static_cast<vec2f>(tb * vec3f{ 1.f, 0.f, 1.f }), vec2f{} };
 	float sqrms[3]{ 0.f, p[1].squared_magnitude(), 0.f };
 
