@@ -46,7 +46,4 @@ namespace mv
 	{
 		return TypeID<T>::value;
 	}
-
-	class Multiverse;
-	Multiverse& multiverse();
 }

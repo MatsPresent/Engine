@@ -26,7 +26,7 @@ mv::id_type mv::Component<dims, stage>::universe_id() const
 template <mv::uint dims, mv::UpdateStage stage>
 mv::Entity<dims>& mv::Component<dims, stage>::entity() const
 {
-	return mv::multiverse().entity<dims>(this->_entity_id);
+	return mv::Multiverse::entity<dims>(this->_entity_id);
 }
 
 template <mv::uint dims, mv::UpdateStage stage>
@@ -64,7 +64,7 @@ mv::id_type mv::Component<dims, mv::UpdateStage::render>::universe_id() const
 template <mv::uint dims>
 mv::Entity<dims>& mv::Component<dims, mv::UpdateStage::render>::entity() const
 {
-	return mv::multiverse().entity<dims>(this->_entity_id);
+	return mv::Multiverse::entity<dims>(this->_entity_id);
 }
 
 template <mv::uint dims>

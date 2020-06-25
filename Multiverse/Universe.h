@@ -9,6 +9,8 @@
 
 namespace mv
 {
+	class Multiverse;
+
 	template <uint dims, UpdateStage stage>
 	class Component;
 

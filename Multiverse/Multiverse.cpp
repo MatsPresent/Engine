@@ -4,7 +4,6 @@
 #include <chrono>
 #include <type_traits>
 
-#include <SDL.h>
 #include "Entity.h"
 #include "Universe.h"
 
@@ -13,6 +12,12 @@
 #include "ThreadPool.h"
 
 #include "Transform.h"
+
+#include "Debug.h"
+#include "ConsoleLogger.h"
+
+#include "Input.h"
+#include "SDLInputHandler.h"
 
 
 #ifndef MV_TICKFREQUENCY
@@ -26,40 +31,36 @@ static_assert(MV_TICKFREQUENCY <= 65536, "[mv] Tick frequency cannot exceed 6553
 const float mv::Multiverse::tick_interval = static_cast<float>(1'000'000'000 / MV_TICKFREQUENCY) / 1'000'000'000;
 const mv::uint mv::Multiverse::tick_frequency = MV_TICKFREQUENCY;
 
+mv::Multiverse::service_locator_type mv::Multiverse::_service_locator;
 
-mv::Multiverse& mv::multiverse()
-{
-	return Multiverse::get();
-}
+mv::Renderer* mv::Multiverse::_renderer;
+mv::ResourceManager* mv::Multiverse::_resource_manager;
+mv::ThreadPool* mv::Multiverse::_thread_pool;
+
+mv::IDList<mv::Entity<2>, mv::id_type> mv::Multiverse::_entities2d;
+mv::IDList<mv::Entity<3>, mv::id_type> mv::Multiverse::_entities3d;
+mv::IDList<mv::Universe<2>, mv::id_type> mv::Multiverse::_universes2d;
+mv::IDList<mv::Universe<3>, mv::id_type> mv::Multiverse::_universes3d;
 
 
-mv::Multiverse::Multiverse() = default;
 
-mv::Multiverse::~Multiverse() = default;
+const mv::ServiceProxy<mv::DebugService> mv::debug(mv::Multiverse::service_locator().get<mv::DebugService>());
+const mv::ServiceProxy<mv::InputService> mv::input(mv::Multiverse::service_locator().get<mv::InputService>());
 
-mv::Multiverse& mv::Multiverse::get()
-{
-	static Multiverse instance;
-	return instance;
-}
+
+
 
 void mv::Multiverse::init()
 {
+	_service_locator.set<DebugService, ConsoleLogger>();
+	_service_locator.set<InputService, SDLInputHandler>();
 	Renderer::Settings renderer_settings{};
 	renderer_settings.window.title = "Window Title";
 	renderer_settings.window.width = 640;
 	renderer_settings.window.height = 480;
-	this->_thread_pool = new ThreadPool(std::min(1, static_cast<int>(std::thread::hardware_concurrency()) - 1));
-	this->_renderer = new Renderer(renderer_settings);
-	this->_resource_manager = new ResourceManager("../Data/");
-}
-
-void mv::Multiverse::cleanup()
-{
-	delete this->_resource_manager;
-	delete this->_renderer;
-	delete this->_thread_pool;
-	SDL_Quit();
+	_thread_pool = new ThreadPool(std::min(1, static_cast<int>(std::thread::hardware_concurrency()) - 1));
+	_renderer = new Renderer(renderer_settings);
+	_resource_manager = new ResourceManager("../Data/");
 }
 
 void mv::Multiverse::run()
@@ -79,99 +80,101 @@ void mv::Multiverse::run()
 		prev_time = curr_time;
 
 		while (behind_time > tick_duration) {
-			exit = true || exit;
-			for (Universe<2>& universe : this->_universes2d) {
-				universe.update(this->tick_interval);
+			exit = _service_locator.get<InputService>()->update() || exit;
+			for (Universe<2>& universe : _universes2d) {
+				universe.update(tick_interval);
 			}
-			for (Universe<3>& universe : this->_universes3d) {
-				universe.update(this->tick_interval);
+			for (Universe<3>& universe : _universes3d) {
+				universe.update(tick_interval);
 			}
 			behind_time -= tick_duration;
 		}
 
-		for (Universe<2>& universe : this->_universes2d) {
+		for (Universe<2>& universe : _universes2d) {
 			universe.render(frame_interval);
 		}
-		for (Universe<3>& universe : this->_universes3d) {
+		for (Universe<3>& universe : _universes3d) {
 			universe.render(frame_interval);
 		}
-		this->_renderer->render();
+		_renderer->render();
 	}
+
+	_cleanup();
 }
 
 
-mv::Renderer& mv::Multiverse::renderer() const
+mv::Renderer& mv::Multiverse::renderer()
 {
-	return *this->_renderer;
+	return *_renderer;
 }
 
-mv::ResourceManager& mv::Multiverse::resource_manager() const
+mv::ResourceManager& mv::Multiverse::resource_manager()
 {
-	return *this->_resource_manager;
+	return *_resource_manager;
 }
 
-mv::ThreadPool& mv::Multiverse::thread_pool() const
+mv::ThreadPool& mv::Multiverse::thread_pool()
 {
-	return *this->_thread_pool;
+	return *_thread_pool;
 }
 
 
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 inline mv::Entity<2>& mv::Multiverse::entity(id_type id)
 {
-	return this->_entities2d[id];
+	return _entities2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 inline mv::Entity<3>& mv::Multiverse::entity(id_type id)
 {
-	return this->_entities3d[id];
+	return _entities3d[id];
 }
 
 
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 mv::Universe<2>& mv::Multiverse::universe(id_type id)
 {
-	return this->_universes2d[id];
+	return _universes2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 mv::Universe<3>& mv::Multiverse::universe(id_type id)
 {
-	return this->_universes3d[id];
+	return _universes3d[id];
 }
 
 
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 mv::Entity<2>& mv::Multiverse::create_entity(id_type universe_id)
 {
-	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id, Transform<2>{}, false });
-	this->_universes2d[universe_id].add_entity(id);
-	return this->_entities2d[id];
+	id_type id = _entities2d.insert(Entity<2>{ _entities2d.next_id(), universe_id, Transform<2>{}, false });
+	_universes2d[universe_id].add_entity(id);
+	return _entities2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 mv::Entity<2>& mv::Multiverse::create_entity(id_type universe_id, const Transform<2>& transform, bool is_static)
 {
-	id_type id = this->_entities2d.insert(Entity<2>{ this->_entities2d.next_id(), universe_id, transform, is_static });
-	this->_universes2d[universe_id].add_entity(id);
-	return this->_entities2d[id];
+	id_type id = _entities2d.insert(Entity<2>{ _entities2d.next_id(), universe_id, transform, is_static });
+	_universes2d[universe_id].add_entity(id);
+	return _entities2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 mv::Entity<3>& mv::Multiverse::create_entity(id_type universe_id)
 {
-	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id, Transform<3>{}, false });
-	this->_universes3d[universe_id].add_entity(id);
-	return this->_entities3d[id];
+	id_type id = _entities3d.insert(Entity<3>{ _entities3d.next_id(), universe_id, Transform<3>{}, false });
+	_universes3d[universe_id].add_entity(id);
+	return _entities3d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 mv::Entity<3>& mv::Multiverse::create_entity(id_type universe_id, const Transform<3>& transform, bool is_static)
 {
-	id_type id = this->_entities3d.insert(Entity<3>{ this->_entities3d.next_id(), universe_id, transform, is_static });
-	this->_universes3d[universe_id].add_entity(id);
-	return this->_entities3d[id];
+	id_type id = _entities3d.insert(Entity<3>{ _entities3d.next_id(), universe_id, transform, is_static });
+	_universes3d[universe_id].add_entity(id);
+	return _entities3d[id];
 }
 
 
@@ -179,18 +182,27 @@ template <mv::uint dims, typename std::enable_if<dims == 2, int>::type>
 mv::Universe<2>& mv::Multiverse::create_universe(
 	uint cell_count_x, uint cell_count_y, float cell_size_x, float cell_size_y)
 {
-	id_type id = this->_universes2d.insert(
-		Universe<2>{ this->_universes2d.next_id(), cell_count_x, cell_count_y, cell_size_x, cell_size_y });
-	return this->_universes2d[id];
+	id_type id = _universes2d.insert(
+		Universe<2>{ _universes2d.next_id(), cell_count_x, cell_count_y, cell_size_x, cell_size_y });
+	return _universes2d[id];
 }
 
 template <mv::uint dims, typename std::enable_if<dims == 3, int>::type>
 mv::Universe<3>& mv::Multiverse::create_universe(
 	uint cell_count_x, uint cell_count_y, uint cell_count_z, float cell_size_x, float cell_size_y, float cell_size_z)
 {
-	id_type id = this->_universes3d.insert(
-		Universe<3>{ this->_universes3d.next_id(), cell_count_x, cell_count_y, cell_count_z, cell_size_x, cell_size_y, cell_size_z });
-	return this->_universes3d[id];
+	id_type id = _universes3d.insert(
+		Universe<3>{ _universes3d.next_id(), cell_count_x, cell_count_y, cell_count_z, cell_size_x, cell_size_y, cell_size_z });
+	return _universes3d[id];
+}
+
+
+
+void mv::Multiverse::_cleanup()
+{
+	delete _resource_manager;
+	delete _renderer;
+	delete _thread_pool;
 }
 
 

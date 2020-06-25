@@ -119,7 +119,7 @@ typename mv::Universe<dims>::Gridspace& mv::Universe<dims>::Gridspace::operator=
 template <mv::uint dims>
 void mv::Universe<dims>::Gridspace::add(id_type entity_id)
 {
-	Entity<dims>& e = mv::multiverse().entity<dims>(entity_id);
+	Entity<dims>& e = mv::Multiverse::entity<dims>(entity_id);
 	uint cell = this->_calculate_cell(e.get_transform().translate);
 	e._gridspace_cell_idx = cell;
 	if (e.is_static()) {
@@ -134,7 +134,7 @@ void mv::Universe<dims>::Gridspace::add(id_type entity_id)
 template <mv::uint dims>
 void mv::Universe<dims>::Gridspace::remove(id_type entity_id)
 {
-	Entity<dims>& e = mv::multiverse().entity<dims>(entity_id);
+	Entity<dims>& e = mv::Multiverse::entity<dims>(entity_id);
 	uint cell = e._gridspace_cell_idx;
 	std::vector<id_type>& vec = e.is_static() ? this->_cells[cell].static_entity_ids : this->_cells[cell].dynamic_entity_ids;
 	auto it = std::find(vec.begin(), vec.end(), entity_id);
@@ -152,7 +152,7 @@ void mv::Universe<dims>::Gridspace::update_cells()
 {
 	for (uint i = 0; i < this->_cell_count(); ++i) {
 		for (uint j = 0; j < this->_cells[i].count; ++j) {
-			Entity<2>& e = mv::multiverse().entity<2>(this->_cells[i].dynamic_entity_ids[j]);
+			Entity<2>& e = mv::Multiverse::entity<2>(this->_cells[i].dynamic_entity_ids[j]);
 			uint new_cell = this->_calculate_cell(e._transform.translate);
 			e._gridspace_cell_idx = new_cell;
 			if (new_cell != i) {
@@ -187,7 +187,7 @@ void mv::Universe<dims>::Gridspace::update_collision() const
 	float sqr_radius = radius * radius;
 	for (uint i = 0; i < this->_cell_count(); ++i) {
 		for (uint j = 0; j < this->_cells[i].count; ++j) {
-			Entity<2>& a = mv::multiverse().entity<2>(this->_cells[i].dynamic_entity_ids[j]);
+			Entity<2>& a = mv::Multiverse::entity<2>(this->_cells[i].dynamic_entity_ids[j]);
 			auto origin = a._transform.translate;
 			uint xmin, xmax, ymin, ymax;
 			if (radius * 2.f < this->_cell_sizes[0] * static_cast<float>(this->_cell_counts[0] - 1)) {
@@ -210,13 +210,13 @@ void mv::Universe<dims>::Gridspace::update_collision() const
 			for (uint y = ymin; y != ymax; y = (y + 1) % this->_cell_counts[1]) {
 				for (uint x = xmin; x != xmax; x = (x + 1) % this->_cell_counts[0]) {
 					for (id_type entity_id : this->_cells[x + this->_cell_counts[0] * y].static_entity_ids) {
-						Entity<2>& b = mv::multiverse().entity<2>(entity_id);
+						Entity<2>& b = mv::Multiverse::entity<2>(entity_id);
 						if ((b.get_transform().translate - origin).squared_magnitude() < sqr_radius) {
 							a._solve_collision(b);
 						}
 					}
 					for (id_type entity_id : this->_cells[x + this->_cell_counts[0] * y].dynamic_entity_ids) {
-						Entity<2>& b = mv::multiverse().entity<2>(entity_id);
+						Entity<2>& b = mv::Multiverse::entity<2>(entity_id);
 						if (entity_id < b.id()) {
 							continue; // only check each pair once
 						}
@@ -264,13 +264,13 @@ std::vector<mv::Entity<2>*> mv::Universe<dims>::Gridspace::entities_in_range(con
 	for (uint y = ymin; y != ymax; y = (y + 1) % this->_cell_counts[1]) {
 		for (uint x = xmin; x != xmax; x = (x + 1) % this->_cell_counts[0]) {
 			for (id_type entity_id : this->_cells[x + this->_cell_counts[0] * y].static_entity_ids) {
-				Entity<2>& e = mv::multiverse().entity<2>(entity_id);
+				Entity<2>& e = mv::Multiverse::entity<2>(entity_id);
 				if ((e.get_transform().translate - origin).squared_magnitude() < sqr_radius) {
 					retval.push_back(&e);
 				}
 			}
 			for (id_type entity_id : this->_cells[x + this->_cell_counts[0] * y].dynamic_entity_ids) {
-				Entity<2>& e = mv::multiverse().entity<2>(entity_id);
+				Entity<2>& e = mv::Multiverse::entity<2>(entity_id);
 				if ((e.get_transform().translate - origin).squared_magnitude() < sqr_radius) {
 					retval.push_back(&e);
 				}
@@ -413,13 +413,13 @@ void mv::Universe<dims>::update(float delta_time)
 	}
 
 	this->_transform_readonly = true;
-	std::future<void> gridspace_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_cells<dims>, std::ref(this->_gridspace));
+	std::future<void> gridspace_update_result = Multiverse::thread_pool().enqueue(&Gridspace::template update_cells<dims>, std::ref(this->_gridspace));
 	for (ComponentUpdaterBase<UpdateStage::postphysics>* updater : this->_postphysics_updaters) {
 		updater->update(delta_time);
 	}
 	gridspace_update_result.get();
 	this->_transform_read_buffer = true;
-	std::future<void> collision_update_result = multiverse().thread_pool().enqueue(&Gridspace::template update_collision<dims>, std::cref(this->_gridspace));
+	std::future<void> collision_update_result = Multiverse::thread_pool().enqueue(&Gridspace::template update_collision<dims>, std::cref(this->_gridspace));
 	for (ComponentUpdaterBase<UpdateStage::input>* updater : this->_input_updaters) {
 		updater->update(delta_time);
 	}
@@ -512,7 +512,7 @@ mv::id_type mv::Universe<dims>::id() const
 template <mv::uint dims>
 mv::Entity<dims>& mv::Universe<dims>::spawn_entity(const transform_type& transform) const
 {
-	return mv::multiverse().create_entity<dims>(this->id(), transform);
+	return mv::Multiverse::create_entity<dims>(this->id(), transform);
 }
 
 

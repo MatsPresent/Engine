@@ -57,7 +57,7 @@ template <mv::uint dims>
 template <typename ComponentType>
 inline ComponentType& mv::Entity<dims>::ComponentIterator<ComponentType>::operator*() const
 {
-	return multiverse().universe<dims>(this->_universe_id).get_component<ComponentType>(this->_component_id_it);
+	return Multiverse::universe<dims>(this->_universe_id).get_component<ComponentType>(this->_component_id_it);
 }
 
 template <mv::uint dims>

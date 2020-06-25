@@ -16,24 +16,21 @@
 
 int main(int, char**)
 {
-	mv::multiverse().init();
-	mv::Universe2D& universe = mv::multiverse().create_universe<2>();
+	mv::Multiverse::init();
+	mv::Universe2D& universe = mv::Multiverse::create_universe<2>();
 	auto& e = universe.spawn_entity();
-	e.add_component<mv::SpriteRenderComponent>(mv::multiverse().resource_manager().get<mv::Texture>("sprites0.png"));
+	e.add_component<mv::SpriteRenderComponent>(mv::Multiverse::resource_manager().get<mv::Texture>("sprites0.png"));
 	auto t = e.get_transform();
 	t.translate = { 40.f, 70.f };
 	e.set_transform(t);
 
-	mv::BinaryReader level_reader(mv::multiverse().resource_manager().get<mv::Blob>("leveldata.dat"));
+	mv::BinaryReader level_reader(mv::Multiverse::resource_manager().get<mv::Blob>("leveldata.dat"));
 	std::vector<Level> levels(100);
 	for (mv::size_type i = 0; i < 100; ++i) {
 		level_reader >> levels[i];
 	}
 	auto block_positions = levels[0].block_positions();
 
-
-	mv::multiverse().run();
-
-	mv::multiverse().cleanup();
+	mv::Multiverse::run();
 	return 0;
 }

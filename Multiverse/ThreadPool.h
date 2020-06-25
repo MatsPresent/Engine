@@ -9,6 +9,8 @@
 
 namespace mv
 {
+	class Multiverse;
+
 	class ThreadPool
 	{
 		friend Multiverse;

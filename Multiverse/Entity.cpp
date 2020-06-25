@@ -56,7 +56,7 @@ mv::id_type mv::Entity<dims>::universe_id() const
 template <mv::uint dims>
 mv::Universe<dims>& mv::Entity<dims>::universe() const
 {
-	return mv::multiverse().universe<dims>(this->_universe_id);
+	return mv::Multiverse::universe<dims>(this->_universe_id);
 }
 
 

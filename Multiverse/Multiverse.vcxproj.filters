@@ -67,7 +67,33 @@
     <ClInclude Include="Renderer.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="MultiversePCH.h" />
+    <ClInclude Include="MultiversePCH.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ServiceLocator.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="TemplateUtils.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleLogger.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="ServiceProxy.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="Scancodes.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLInputHandler.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ResourceManager.cpp">
@@ -118,10 +144,16 @@
     <ClCompile Include="SpriteSheet.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="MultiversePCH.cpp" />
     <ClCompile Include="stb_image.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="MultiversePCH.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleLogger.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLInputHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Components">
@@ -144,6 +176,12 @@
     </Filter>
     <Filter Include="Graphics">
       <UniqueIdentifier>{fe504302-2ef4-42b9-bfb0-6e12aacef28d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Services">
+      <UniqueIdentifier>{996d939d-2dd8-47d7-9aa5-96907a5d15ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{63749e6b-64a1-48a5-953c-36f232aa48ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +211,12 @@
     </None>
     <None Include="CollisionShape.inl">
       <Filter>Collision</Filter>
+    </None>
+    <None Include="ServiceLocator.inl">
+      <Filter>Services</Filter>
+    </None>
+    <None Include="ServiceProxy.inl">
+      <Filter>Services</Filter>
     </None>
   </ItemGroup>
 </Project>
